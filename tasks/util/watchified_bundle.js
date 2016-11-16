@@ -22,7 +22,7 @@ module.exports = function makeWatchifiedBundle(onFirstBundleCallback) {
     var b = browserify(constants.pathToPlotlyIndex, {
         debug: true,
         standalone: 'Plotly',
-        transform: [compressAttributes],
+        transform: ['glslify', compressAttributes],
         cache: {},
         packageCache: {},
         plugin: [watchify]

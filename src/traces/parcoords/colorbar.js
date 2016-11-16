@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2017, Plotly, Inc.
+* Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -16,34 +16,40 @@ var Plots = require('../../plots/plots');
 var Colorscale = require('../../components/colorscale');
 var drawColorbar = require('../../components/colorbar/draw');
 
-// TODO unify parcoords, scatter and heatmap colorbar
+
 module.exports = function colorbar(gd, cd) {
     var trace = cd[0].trace,
-        cbId = 'cb' + trace.uid,
-        zmin = trace.zmin,
-        zmax = trace.zmax;
-
-    if(!isNumeric(zmin)) zmin = Lib.aggNums(Math.min, null, trace.z);
-    if(!isNumeric(zmax)) zmax = Lib.aggNums(Math.max, null, trace.z);
+        line = trace.line,
+        cbId = 'cb' + trace.uid;
 
     gd._fullLayout._infolayer.selectAll('.' + cbId).remove();
 
-    if(!trace.showscale) {
+    // TODO unify parcoords, scatter and heatmap colorbar
+    // TODO make Colorbar.draw support multiple colorbar per trace
+
+    if((line === undefined) || !line.showscale) {
         Plots.autoMargin(gd, cbId);
         return;
     }
 
+    var vals = line.color,
+        cmin = line.cmin,
+        cmax = line.cmax;
+
+    if(!isNumeric(cmin)) cmin = Lib.aggNums(Math.min, null, vals);
+    if(!isNumeric(cmax)) cmax = Lib.aggNums(Math.max, null, vals);
+
     var cb = cd[0].t.cb = drawColorbar(gd, cbId);
     var sclFunc = Colorscale.makeColorScaleFunc(
         Colorscale.extractScale(
-            trace.colorscale,
-            zmin,
-            zmax
+            line.colorscale,
+            cmin,
+            cmax
         ),
         { noNumericCheck: true }
     );
 
     cb.fillcolor(sclFunc)
-        .filllevels({start: zmin, end: zmax, size: (zmax - zmin) / 254})
-        .options(trace.colorbar)();
+        .filllevels({start: cmin, end: cmax, size: (cmax - cmin) / 254})
+        .options(line.colorbar)();
 };

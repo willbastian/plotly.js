@@ -271,6 +271,9 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
 
     var previousAxisOrder = [];
 
+    var dims = d3.range(2).map(function() {return d3.range(4).map(function() {return d3.range(16)});});
+    var lims = d3.range(2).map(function() {return d3.range(4).map(function() {return d3.range(16)});});
+
     function renderGLParcoords(dimensionViews, setChanged, clearOnly) {
 
         var I;
@@ -296,18 +299,16 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
             }
         }
 
-        var dims = d3.range(2).map(function() {return d3.range(4).map(function() {return d3.range(16)});});
-
-        // todo turn it into something DRYer and using efficient loops
         function makeItem(i, ii, x, panelSizeX, originalXIndex, scatter) {
-            var lr, mat, d, index;
+            var loHi, abcd, d, index;
             var leftRight = [i, ii];
 
-            for(lr = 0; lr < 2; lr++) {
-                index = leftRight[lr]
-                for(mat = 0; mat < 4; mat++) {
+            for(loHi = 0; loHi < 2; loHi++) {
+                index = leftRight[loHi]
+                for(abcd = 0; abcd < 4; abcd++) {
                     for (d = 0; d < 16; d++) {
-                        dims[lr][mat][d] = d + mat * 16 === index ? 1 : 0;
+                        dims[loHi][abcd][d] = d + 16 * abcd === index ? 1 : 0;
+                        lims[loHi][abcd][d] = paddedUnit((!context && valid(d, 16 * abcd) ? orig(d + 16 * abcd).filter[loHi] : loHi)) + (2 * loHi - 1)  * filterEpsilon;
                     }
                 }
             }
@@ -317,6 +318,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
                 resolution: [canvasWidth, canvasHeight],
                 viewBoxPosition: [x + overdrag, 0],
                 viewBoxSize: [panelSizeX, canvasPanelSizeY],
+
                 dim1A: dims[0][0],
                 dim1B: dims[0][1],
                 dim1C: dims[0][2],
@@ -326,14 +328,15 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
                 dim2C: dims[1][2],
                 dim2D: dims[1][3],
 
-                loA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[0] : 0)) - filterEpsilon;}),
-                hiA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[1] : 1)) + filterEpsilon;}),
-                loB: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[0] : 0)) - filterEpsilon;}),
-                hiB: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[1] : 1)) + filterEpsilon;}),
-                loC: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 32) ? orig(i + 32).filter[0] : 0)) - filterEpsilon;}),
-                hiC: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 32) ? orig(i + 32).filter[1] : 1)) + filterEpsilon;}),
-                loD: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 48) ? orig(i + 48).filter[0] : 0)) - filterEpsilon;}),
-                hiD: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 48) ? orig(i + 48).filter[1] : 1)) + filterEpsilon;}),
+                loA: lims[0][0],
+                loB: lims[0][1],
+                loC: lims[0][2],
+                loD: lims[0][3],
+                hiA: lims[1][0],
+                hiB: lims[1][1],
+                hiC: lims[1][2],
+                hiD: lims[1][3],
+
                 colorClamp: colorClamp,
                 scatter: scatter || 0,
                 scissorX: I === leftmostIndex ? 0 : x + overdrag,

@@ -62,8 +62,6 @@ function menuDefaults(menuIn, menuOut, layoutOut) {
     coerce('borderwidth');
 }
 
-// todo consider unifying it with other similar array coercions
-// - though `Array.isArray(buttonIn.args)` is quite spedific...
 function buttonsDefaults(menuIn, menuOut) {
     var buttonsIn = menuIn.buttons || [],
         buttonsOut = menuOut.buttons = [];

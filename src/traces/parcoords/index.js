@@ -19,7 +19,7 @@ Parcoords.colorbar = require('./colorbar');
 Parcoords.moduleType = 'trace';
 Parcoords.name = 'parcoords';
 Parcoords.basePlotModule = require('./base_plot');
-Parcoords.categories = ['parcoords', 'lineColorscale'];
+Parcoords.categories = ['gl'];
 Parcoords.meta = {
     description: [
         'Parallel coordinates for multidimensional exploratory data analysis.',

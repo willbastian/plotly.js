@@ -10,6 +10,7 @@
 
 var lineLayerMaker = require('./lines');
 var utils = require('./utils');
+var Lib = require('../../lib');
 var d3 = require('d3');
 
 function keyFun(d) {
@@ -116,7 +117,7 @@ module.exports = function(root, styledData, layout) {
     var tickDistance = styledData.tickdistance;
     var coloringDomainToUnitScale = makeDomainToUnitScale(styledData.line.color);
     var overdrag = 40;
-    var lines = utils.extend(styledData.lines, {
+    var lines = Lib.extendDeep(styledData.lines, {
         color: styledData.line.color.map(coloringDomainToUnitScale),
         overdrag: overdrag
     });

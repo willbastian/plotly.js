@@ -515,7 +515,7 @@ module.exports = function(root, styledData, layout) {
                 f[1] = Math.min(1, f[1] + 0.05);
             }
             d3.select(this).transition().duration(150).call(dimension.brush.extent(f));
-            dimension.parentfocusLineLayer.render(panels, true);
+            dimension.parent.focusLineLayer.render(panels, true);
         }
         domainBrushing = false;
     }

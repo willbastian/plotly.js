@@ -8,7 +8,7 @@
 
 'use strict';
 
-var utils = require('./utils');
+var d3 = require('d3');
 var createREGL = require('regl');
 var glslify = require('glslify');
 var vertexShaderSource = glslify('./shaders/vertex.glsl');
@@ -127,15 +127,6 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
     function adjustDepth(d) {
         return Math.max(depthLimitEpsilon, Math.min(1 - depthLimitEpsilon, d));
     }
-
-/*
-    var depthDimension = geometry.depthDimension;
-    var depthUnitScale = dimensions[depthDimension].domainToUnitScale;
-    var depth = utils.range(sampleCount * 2).map(function(d) {
-        return Math.max(depthLimitEpsilon, Math.min(1 - depthLimitEpsilon,
-            depthUnitScale(data[depthDimension].values[Math.round((d - d % 2) / 2)])));
-    })
-*/
 
     var ccolor = [];
     for(j = 0; j < 256; j++) {
@@ -275,7 +266,6 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
     }
 
     function approach(/* dimension */) {
-        // utils.ndarrayOrder(, dimension.index);
         // console.log('Approached ', JSON.stringify(dimension.name));
     }
 
@@ -313,22 +303,22 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
                 resolution: [canvasWidth, canvasHeight],
                 viewBoxPosition: [x + overdrag, 0],
                 viewBoxSize: [panelSizeX, canvasPanelSizeY],
-                var1A: utils.range(16).map(function(d) {return d === i ? 1 : 0;}),
-                var2A: utils.range(16).map(function(d) {return d === ii ? 1 : 0;}),
-                var1B: utils.range(16).map(function(d) {return d + 16 === i ? 1 : 0;}),
-                var2B: utils.range(16).map(function(d) {return d + 16 === ii ? 1 : 0;}),
-                var1C: utils.range(16).map(function(d) {return d + 32 === i ? 1 : 0;}),
-                var2C: utils.range(16).map(function(d) {return d + 32 === ii ? 1 : 0;}),
-                var1D: utils.range(16).map(function(d) {return d + 48 === i ? 1 : 0;}),
-                var2D: utils.range(16).map(function(d) {return d + 48 === ii ? 1 : 0;}),
-                loA: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[0] : 0)) - filterEpsilon;}),
-                hiA: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[1] : 1)) + filterEpsilon;}),
-                loB: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[0] : 0)) - filterEpsilon;}),
-                hiB: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[1] : 1)) + filterEpsilon;}),
-                loC: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 32) ? orig(i + 32).filter[0] : 0)) - filterEpsilon;}),
-                hiC: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 32) ? orig(i + 32).filter[1] : 1)) + filterEpsilon;}),
-                loD: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 48) ? orig(i + 48).filter[0] : 0)) - filterEpsilon;}),
-                hiD: utils.range(16).map(function(i) {return paddedUnit((!context && valid(i, 48) ? orig(i + 48).filter[1] : 1)) + filterEpsilon;}),
+                var1A: d3.range(16).map(function(d) {return d === i ? 1 : 0;}),
+                var2A: d3.range(16).map(function(d) {return d === ii ? 1 : 0;}),
+                var1B: d3.range(16).map(function(d) {return d + 16 === i ? 1 : 0;}),
+                var2B: d3.range(16).map(function(d) {return d + 16 === ii ? 1 : 0;}),
+                var1C: d3.range(16).map(function(d) {return d + 32 === i ? 1 : 0;}),
+                var2C: d3.range(16).map(function(d) {return d + 32 === ii ? 1 : 0;}),
+                var1D: d3.range(16).map(function(d) {return d + 48 === i ? 1 : 0;}),
+                var2D: d3.range(16).map(function(d) {return d + 48 === ii ? 1 : 0;}),
+                loA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[0] : 0)) - filterEpsilon;}),
+                hiA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[1] : 1)) + filterEpsilon;}),
+                loB: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[0] : 0)) - filterEpsilon;}),
+                hiB: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[1] : 1)) + filterEpsilon;}),
+                loC: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 32) ? orig(i + 32).filter[0] : 0)) - filterEpsilon;}),
+                hiC: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 32) ? orig(i + 32).filter[1] : 1)) + filterEpsilon;}),
+                loD: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 48) ? orig(i + 48).filter[0] : 0)) - filterEpsilon;}),
+                hiD: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 48) ? orig(i + 48).filter[1] : 1)) + filterEpsilon;}),
                 colorClamp: colorClamp,
                 scatter: scatter || 0,
                 scissorX: I === leftmostIndex ? 0 : x + overdrag,

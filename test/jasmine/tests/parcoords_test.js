@@ -119,21 +119,16 @@ var mock = {
 };
 
 describe('parcoords', function() {
+    var mockCopy = Lib.extendDeep({}, mock),
+        gd;
 
-    describe('event data', function() {
-        var mockCopy = Lib.extendDeep({}, mock),
-            gd;
+    beforeEach(function() {
+        gd = createGraphDiv();
+    });
 
-        beforeEach(function(done) {
-            gd = createGraphDiv();
+    afterEach(destroyGraphDiv);
 
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout)
-                .then(done);
-        });
-
-        afterEach(destroyGraphDiv);
-
-        it('should work', function() {
-        });
+    it('should generate a parcoords plot', function(done) {
+        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
     });
 });

@@ -234,14 +234,14 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
             resolution: regl.prop('resolution'),
             viewBoxPosition: regl.prop('viewBoxPosition'),
             viewBoxSize: regl.prop('viewBoxSize'),
-            var1A: regl.prop('var1A'),
-            var2A: regl.prop('var2A'),
-            var1B: regl.prop('var1B'),
-            var2B: regl.prop('var2B'),
-            var1C: regl.prop('var1C'),
-            var2C: regl.prop('var2C'),
-            var1D: regl.prop('var1D'),
-            var2D: regl.prop('var2D'),
+            dim1A: regl.prop('dim1A'),
+            dim2A: regl.prop('dim2A'),
+            dim1B: regl.prop('dim1B'),
+            dim2B: regl.prop('dim2B'),
+            dim1C: regl.prop('dim1C'),
+            dim2C: regl.prop('dim2C'),
+            dim1D: regl.prop('dim1D'),
+            dim2D: regl.prop('dim2D'),
             loA: regl.prop('loA'),
             hiA: regl.prop('hiA'),
             loB: regl.prop('loB'),
@@ -303,14 +303,14 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
                 resolution: [canvasWidth, canvasHeight],
                 viewBoxPosition: [x + overdrag, 0],
                 viewBoxSize: [panelSizeX, canvasPanelSizeY],
-                var1A: d3.range(16).map(function(d) {return d === i ? 1 : 0;}),
-                var2A: d3.range(16).map(function(d) {return d === ii ? 1 : 0;}),
-                var1B: d3.range(16).map(function(d) {return d + 16 === i ? 1 : 0;}),
-                var2B: d3.range(16).map(function(d) {return d + 16 === ii ? 1 : 0;}),
-                var1C: d3.range(16).map(function(d) {return d + 32 === i ? 1 : 0;}),
-                var2C: d3.range(16).map(function(d) {return d + 32 === ii ? 1 : 0;}),
-                var1D: d3.range(16).map(function(d) {return d + 48 === i ? 1 : 0;}),
-                var2D: d3.range(16).map(function(d) {return d + 48 === ii ? 1 : 0;}),
+                dim1A: d3.range(16).map(function(d) {return d === i ? 1 : 0;}),
+                dim2A: d3.range(16).map(function(d) {return d === ii ? 1 : 0;}),
+                dim1B: d3.range(16).map(function(d) {return d + 16 === i ? 1 : 0;}),
+                dim2B: d3.range(16).map(function(d) {return d + 16 === ii ? 1 : 0;}),
+                dim1C: d3.range(16).map(function(d) {return d + 32 === i ? 1 : 0;}),
+                dim2C: d3.range(16).map(function(d) {return d + 32 === ii ? 1 : 0;}),
+                dim1D: d3.range(16).map(function(d) {return d + 48 === i ? 1 : 0;}),
+                dim2D: d3.range(16).map(function(d) {return d + 48 === ii ? 1 : 0;}),
                 loA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[0] : 0)) - filterEpsilon;}),
                 hiA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[1] : 1)) + filterEpsilon;}),
                 loB: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[0] : 0)) - filterEpsilon;}),
@@ -330,11 +330,11 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
             var dimensionView = dimensionViews[I];
             var i = dimensionView.originalXIndex;
             var x = dimensionView.x * canvasPixelRatio;
-            var nextVar = dimensionViews[(I + 1) % shownDimensionCount];
-            var ii = nextVar.originalXIndex;
-            var panelSizeX = nextVar.x * canvasPixelRatio - x;
-            if(setChanged || !previousAxisOrder[i] || previousAxisOrder[i][0] !== x || previousAxisOrder[i][1] !== nextVar.x) {
-                previousAxisOrder[i] = [x, nextVar.x];
+            var nextDim = dimensionViews[(I + 1) % shownDimensionCount];
+            var ii = nextDim.originalXIndex;
+            var panelSizeX = nextDim.x * canvasPixelRatio - x;
+            if(setChanged || !previousAxisOrder[i] || previousAxisOrder[i][0] !== x || previousAxisOrder[i][1] !== nextDim.x) {
+                previousAxisOrder[i] = [x, nextDim.x];
                 var item = makeItem(i, ii, x, panelSizeX, dimensionView.originalXIndex, dimensionView.scatter);
                 renderState.clearOnly = clearOnly;
                 renderBlock(regl, glAes, renderState, setChanged ? lines.blocklinecount : sampleCount, sampleCount, item);

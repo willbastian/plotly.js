@@ -7,7 +7,7 @@ attribute vec4 p0, p1, p2, p3,
 
 attribute vec4 pf;
 
-uniform mat4 var1A, var2A, var1B, var2B, var1C, var2C, var1D, var2D,
+uniform mat4 dim1A, dim2A, dim1B, dim2B, dim1C, dim2C, dim1D, dim2D,
              loA, hiA, loB, hiB, loC, hiC, loD, hiD;
 
 uniform vec2 resolution,
@@ -58,8 +58,8 @@ void main() {
                        mshow(pC, loC, hiC) &&
                        mshow(pD, loD, hiD));
 
-    vec2 yy = show * vec2(val(pA, var2A) + val(pB, var2B) + val(pC, var2C) + val(pD, var2D),
-                          val(pA, var1A) + val(pB, var1B) + val(pC, var1C) + val(pD, var1D));
+    vec2 yy = show * vec2(val(pA, dim2A) + val(pB, dim2B) + val(pC, dim2C) + val(pD, dim2D),
+                          val(pA, dim1A) + val(pB, dim1B) + val(pC, dim1C) + val(pD, dim1D));
 
     vec2 dimensionToggle = vec2(x, 1.0 - x);
 

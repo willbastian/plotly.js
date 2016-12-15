@@ -271,8 +271,8 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
 
     var previousAxisOrder = [];
 
-    var dims = d3.range(2).map(function() {return d3.range(4).map(function() {return d3.range(16)});});
-    var lims = d3.range(2).map(function() {return d3.range(4).map(function() {return d3.range(16)});});
+    var dims = d3.range(2).map(function() {return d3.range(4).map(function() {return new Float32Array(16);});});
+    var lims = d3.range(2).map(function() {return d3.range(4).map(function() {return new Float32Array(16);});});
 
     function renderGLParcoords(dimensionViews, setChanged, clearOnly) {
 
@@ -304,11 +304,11 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
             var leftRight = [i, ii];
 
             for(loHi = 0; loHi < 2; loHi++) {
-                index = leftRight[loHi]
+                index = leftRight[loHi];
                 for(abcd = 0; abcd < 4; abcd++) {
-                    for (d = 0; d < 16; d++) {
+                    for(d = 0; d < 16; d++) {
                         dims[loHi][abcd][d] = d + 16 * abcd === index ? 1 : 0;
-                        lims[loHi][abcd][d] = paddedUnit((!context && valid(d, 16 * abcd) ? orig(d + 16 * abcd).filter[loHi] : loHi)) + (2 * loHi - 1)  * filterEpsilon;
+                        lims[loHi][abcd][d] = paddedUnit((!context && valid(d, 16 * abcd) ? orig(d + 16 * abcd).filter[loHi] : loHi)) + (2 * loHi - 1) * filterEpsilon;
                     }
                 }
             }

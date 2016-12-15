@@ -9,7 +9,6 @@
 'use strict';
 
 var lineLayerMaker = require('./lines');
-var utils = require('./utils');
 var Lib = require('../../lib');
 var d3 = require('d3');
 
@@ -19,6 +18,18 @@ function keyFun(d) {
 
 function repeat(d) {
     return [d];
+}
+
+function ordinalScaleSnap(scale, v) {
+    var i, a, prevDiff, prevValue, diff;
+    for(i = 0, a = scale.range(), prevDiff = Infinity, prevValue = a[0], diff; i < a.length; i++) {
+        if((diff = Math.abs(a[i] - v)) > prevDiff) {
+            return prevValue;
+        }
+        prevDiff = diff;
+        prevValue = a[i];
+    }
+    return a[a.length - 1];
 }
 
 function makeDomainScale(height, padding, integerPadding, dimension) {
@@ -508,8 +519,8 @@ module.exports = function(root, styledData, layout) {
         if(!empty && dimension.integer) {
             var panels = dimension.parent.panels;
             var f = panels[dimension.xIndex].filter;
-            f[0] = utils.d3OrdinalScaleSnap(dimension.integerScale, f[0]);
-            f[1] = utils.d3OrdinalScaleSnap(dimension.integerScale, f[1]);
+            f[0] = ordinalScaleSnap(dimension.integerScale, f[0]);
+            f[1] = ordinalScaleSnap(dimension.integerScale, f[1]);
             if(f[0] === f[1]) {
                 f[0] = Math.max(0, f[0] - 0.05);
                 f[1] = Math.min(1, f[1] + 0.05);

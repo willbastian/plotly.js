@@ -296,21 +296,36 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
             }
         }
 
+        var dims = d3.range(2).map(function() {return d3.range(4).map(function() {return d3.range(16)});});
+
         // todo turn it into something DRYer and using efficient loops
         function makeItem(i, ii, x, panelSizeX, originalXIndex, scatter) {
+            var lr, mat, d, index;
+            var leftRight = [i, ii];
+
+            for(lr = 0; lr < 2; lr++) {
+                index = leftRight[lr]
+                for(mat = 0; mat < 4; mat++) {
+                    for (d = 0; d < 16; d++) {
+                        dims[lr][mat][d] = d + mat * 16 === index ? 1 : 0;
+                    }
+                }
+            }
+
             return {
                 key: originalXIndex,
                 resolution: [canvasWidth, canvasHeight],
                 viewBoxPosition: [x + overdrag, 0],
                 viewBoxSize: [panelSizeX, canvasPanelSizeY],
-                dim1A: d3.range(16).map(function(d) {return d === i ? 1 : 0;}),
-                dim2A: d3.range(16).map(function(d) {return d === ii ? 1 : 0;}),
-                dim1B: d3.range(16).map(function(d) {return d + 16 === i ? 1 : 0;}),
-                dim2B: d3.range(16).map(function(d) {return d + 16 === ii ? 1 : 0;}),
-                dim1C: d3.range(16).map(function(d) {return d + 32 === i ? 1 : 0;}),
-                dim2C: d3.range(16).map(function(d) {return d + 32 === ii ? 1 : 0;}),
-                dim1D: d3.range(16).map(function(d) {return d + 48 === i ? 1 : 0;}),
-                dim2D: d3.range(16).map(function(d) {return d + 48 === ii ? 1 : 0;}),
+                dim1A: dims[0][0],
+                dim1B: dims[0][1],
+                dim1C: dims[0][2],
+                dim1D: dims[0][3],
+                dim2A: dims[1][0],
+                dim2B: dims[1][1],
+                dim2C: dims[1][2],
+                dim2D: dims[1][3],
+
                 loA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[0] : 0)) - filterEpsilon;}),
                 hiA: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 0) ? orig(i).filter[1] : 1)) + filterEpsilon;}),
                 loB: d3.range(16).map(function(i) {return paddedUnit((!context && valid(i, 16) ? orig(i + 16).filter[0] : 0)) - filterEpsilon;}),

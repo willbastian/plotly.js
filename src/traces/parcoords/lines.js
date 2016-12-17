@@ -8,7 +8,6 @@
 
 'use strict';
 
-var d3 = require('d3');
 var createREGL = require('regl');
 var glslify = require('glslify');
 var vertexShaderSource = glslify('./shaders/vertex.glsl');
@@ -16,6 +15,10 @@ var fragmentShaderSource = glslify('./shaders/fragment.glsl');
 
 var depthLimitEpsilon = 1e-6; // don't change; otherwise near/far plane lines are lost
 var filterEpsilon = 1e-3; // don't change; otherwise filter may lose lines on domain boundaries
+
+var gpuDimensionCount = 64;
+var sectionVertexCount = 2;
+var vec4NumberCount = 4;
 
 var dummyPixel = new Uint8Array(4);
 function ensureDraw(regl) {
@@ -51,8 +54,8 @@ function renderBlock(regl, glAes, renderState, blockLineCount, sampleCount, item
 
         count = Math.min(blockLineCount, sampleCount - blockNumber * blockLineCount);
 
-        item.offset = 2 * blockNumber * blockLineCount;
-        item.count = 2 * count;
+        item.offset = sectionVertexCount * blockNumber * blockLineCount;
+        item.count = sectionVertexCount * count;
         if(blockNumber === 0) {
             window.cancelAnimationFrame(renderState.currentRafs[rafKey]); // stop drawing possibly stale glyphs before clearing
             clear(regl, item.scissorX, 0, item.scissorWidth, item.viewBoxSize[1]);
@@ -77,7 +80,72 @@ function renderBlock(regl, glAes, renderState, blockLineCount, sampleCount, item
     render(blockNumber);
 }
 
-module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unitToColor, context) {
+function adjustDepth(d) {
+    // WebGL matrix operations use floats with limited precision, potentially causing a number near a border of [0, 1]
+    // to end up slightly outside the border. With an epsilon, we reduce the chance that a line gets clipped by the
+    // near or the far plane.
+    return Math.max(depthLimitEpsilon, Math.min(1 - depthLimitEpsilon, d));
+}
+
+function palette(unitToColor, context, lines_contextcolor, lines_contextopacity) {
+    var result = [];
+    for(var j = 0; j < 256; j++) {
+        var c = unitToColor(j / 255);
+        result.push((context ? lines_contextcolor : c).concat([context ? lines_contextopacity : 255]));
+    }
+
+    return result;
+}
+
+function makePoints(sampleCount, dimensionCount, dimensions, color) {
+
+    var points = [];
+    for(var j = 0; j < sampleCount; j++) {
+        for(var i = 0; i < gpuDimensionCount; i++) {
+            points.push(i < dimensionCount ?
+                dimensions[i].paddedUnitValues[j] :
+                i === (gpuDimensionCount - 1) ?
+                    adjustDepth(color[j]) :
+                    0.5);
+        }
+    }
+
+    return points;
+}
+
+function makeVecAttr(sampleCount, points, vecIndex) {
+
+    var i, j, k;
+    var pointPairs = [];
+
+    for(j = 0; j < sampleCount; j++) {
+        for(k = 0; k < sectionVertexCount; k++) {
+            for(i = 0; i < vec4NumberCount; i++) {
+                pointPairs.push(points[j * gpuDimensionCount + vecIndex * vec4NumberCount + i]);
+                if(vecIndex * vec4NumberCount + i === gpuDimensionCount - 1 && k % 2 === 0) {
+                    pointPairs[pointPairs.length - 1] *= -1;
+                }
+            }
+        }
+    }
+
+    return pointPairs;
+}
+
+function makeAttributes(sampleCount, points) {
+
+    var vecIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    var vectors = vecIndices.map(function(vecIndex) {return makeVecAttr(sampleCount, points, vecIndex);});
+
+    var attributes = {};
+    vectors.forEach(function(v, vecIndex) {
+        attributes['p' + vecIndex.toString(16)] = v;
+    });
+
+    return attributes;
+}
+
+module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions, unitToColor, context) {
 
     var renderState = {
         currentRafs: {},
@@ -85,69 +153,20 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
         clearOnly: false
     };
 
-    var dimensions = data;
     var dimensionCount = dimensions.length;
     var sampleCount = dimensions[0].values.length;
 
     var focusAlphaBlending = context; // controlConfig.focusAlphaBlending;
 
-    var canvasPixelRatio = lines.pixelratio;
     var canvasPanelSizeY = canvasHeight;
 
-    var gpuDimensionCount = 64;
-    var strideableVectorAttributeCount = gpuDimensionCount - 4; // stride can't be an exact 256
+    var color = lines.color;
+    var overdrag = lines.canvasOverdrag;
 
-    var paddedUnit = function paddedUnit(d) {
-        var unitPad = lines.verticalpadding / canvasPanelSizeY;
-        return unitPad + d * (1 - 2 * unitPad);
-    };
+    var panelCount = dimensionCount - 1;
 
-    var color = lines.color.map(paddedUnit);
-    var overdrag = lines.overdrag * canvasPixelRatio;
-
-    var points = [];
-    var i, j;
-    for(j = 0; j < sampleCount; j++) {
-        for(i = 0; i < strideableVectorAttributeCount; i++) {
-            points.push(i < dimensionCount ? paddedUnit(dimensions[i].domainToUnitScale(data[i].values[j])) : 0.5);
-        }
-    }
-
-    var pointPairs = [];
-
-    for(j = 0; j < sampleCount; j++) {
-        for(i = 0; i < strideableVectorAttributeCount; i++) {
-            pointPairs.push(points[j * strideableVectorAttributeCount + i]);
-        }
-        for(i = 0; i < strideableVectorAttributeCount; i++) {
-            pointPairs.push(points[j * strideableVectorAttributeCount + i]);
-        }
-    }
-
-    function adjustDepth(d) {
-        return Math.max(depthLimitEpsilon, Math.min(1 - depthLimitEpsilon, d));
-    }
-
-    var ccolor = [];
-    for(j = 0; j < 256; j++) {
-        var c = unitToColor(j / 255);
-        ccolor.push((focusAlphaBlending ? lines.contextcolor : c).concat([focusAlphaBlending ? lines.contextopacity : 255]));
-    }
-
-    var styling = [];
-    for(j = 0; j < sampleCount; j++) {
-        for(var k = 0; k < 2; k++) {
-            styling.push(points[(j + 1) * strideableVectorAttributeCount]);
-            styling.push(points[(j + 1) * strideableVectorAttributeCount + 1]);
-            styling.push(points[(j + 1) * strideableVectorAttributeCount + 2]);
-            styling.push(Math.round(2 * ((k % 2) - 0.5)) * adjustDepth(color[j]));
-        }
-    }
-
-    var positionStride = strideableVectorAttributeCount * 4;
-
-    var shownDimensionCount = dimensionCount;
-    var shownPanelCount = shownDimensionCount - 1;
+    var points = makePoints(sampleCount, dimensionCount, dimensions, color);
+    var attributes = makeAttributes(sampleCount, points);
 
     var regl = createREGL({
         canvas: canvasGL,
@@ -162,22 +181,8 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
         type: 'uint8',
         mag: 'nearest',
         min: 'nearest',
-        data: ccolor
+        data: palette(unitToColor, context, lines.contextcolor, lines.contextopacity)
     });
-
-    var positionBuffer = regl.buffer(new Float32Array(pointPairs));
-
-    var attributes = {
-        pf: styling
-    };
-
-    for(i = 0; i < strideableVectorAttributeCount / 4; i++) {
-        attributes['p' + i.toString(16)] = {
-            offset: i * 16,
-            stride: positionStride,
-            buffer: positionBuffer
-        };
-    }
 
     var glAes = regl({
 
@@ -265,36 +270,29 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
         colorClamp[1] = unitDomain[1];
     }
 
-    function approach(/* dimension */) {
-        // console.log('Approached ', JSON.stringify(dimension.name));
-    }
-
     var previousAxisOrder = [];
 
-    var dims = d3.range(2).map(function() {return d3.range(4).map(function() {return new Float32Array(16);});});
-    var lims = d3.range(2).map(function() {return d3.range(4).map(function() {return new Float32Array(16);});});
-
-    function renderGLParcoords(dimensionViews, setChanged, clearOnly) {
+    function renderGLParcoords(dimensions, setChanged, clearOnly) {
 
         var I;
 
         function valid(i, offset) {
-            return i < shownDimensionCount && i + offset < dimensionViews.length;
+            return i + offset < dimensions.length;
         }
 
         function orig(i) {
-            var index = dimensionViews.map(function(v) {return v.originalXIndex;}).indexOf(i);
-            return dimensionViews[index];
+            var index = dimensions.map(function(v) {return v.originalXIndex;}).indexOf(i);
+            return dimensions[index];
         }
 
         var leftmostIndex, rightmostIndex, lowestX = Infinity, highestX = -Infinity;
-        for(I = 0; I < shownPanelCount; I++) {
-            if(dimensionViews[I].x > highestX) {
-                highestX = dimensionViews[I].x;
+        for(I = 0; I < panelCount; I++) {
+            if(dimensions[I].canvasX > highestX) {
+                highestX = dimensions[I].canvasX;
                 rightmostIndex = I;
             }
-            if(dimensionViews[I].x < lowestX) {
-                lowestX = dimensionViews[I].x;
+            if(dimensions[I].canvasX < lowestX) {
+                lowestX = dimensions[I].canvasX;
                 leftmostIndex = I;
             }
         }
@@ -303,12 +301,15 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
             var loHi, abcd, d, index;
             var leftRight = [i, ii];
 
+            var dims = [0, 1].map(function() {return [0, 1, 2, 3].map(function() {return new Float32Array(16);});});
+            var lims = [0, 1].map(function() {return [0, 1, 2, 3].map(function() {return new Float32Array(16);});});
+
             for(loHi = 0; loHi < 2; loHi++) {
                 index = leftRight[loHi];
                 for(abcd = 0; abcd < 4; abcd++) {
                     for(d = 0; d < 16; d++) {
                         dims[loHi][abcd][d] = d + 16 * abcd === index ? 1 : 0;
-                        lims[loHi][abcd][d] = paddedUnit((!context && valid(d, 16 * abcd) ? orig(d + 16 * abcd).filter[loHi] : loHi)) + (2 * loHi - 1) * filterEpsilon;
+                        lims[loHi][abcd][d] = (!context && valid(d, 16 * abcd) ? orig(d + 16 * abcd).filter[loHi] : loHi) + (2 * loHi - 1) * filterEpsilon;
                     }
                 }
             }
@@ -344,30 +345,25 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, data, unit
             };
         }
 
-        for(I = 0; I < shownPanelCount; I++) {
-            var dimensionView = dimensionViews[I];
-            var i = dimensionView.originalXIndex;
-            var x = dimensionView.x * canvasPixelRatio;
-            var nextDim = dimensionViews[(I + 1) % shownDimensionCount];
+        for(I = 0; I < panelCount; I++) {
+            var dimension = dimensions[I];
+            var i = dimension.originalXIndex;
+            var x = dimension.canvasX;
+            var nextDim = dimensions[(I + 1) % dimensionCount];
             var ii = nextDim.originalXIndex;
-            var panelSizeX = nextDim.x * canvasPixelRatio - x;
-            if(setChanged || !previousAxisOrder[i] || previousAxisOrder[i][0] !== x || previousAxisOrder[i][1] !== nextDim.x) {
-                previousAxisOrder[i] = [x, nextDim.x];
-                var item = makeItem(i, ii, x, panelSizeX, dimensionView.originalXIndex, dimensionView.scatter);
+            var panelSizeX = nextDim.canvasX - x;
+            if(setChanged || !previousAxisOrder[i] || previousAxisOrder[i][0] !== x || previousAxisOrder[i][1] !== nextDim.canvasX) {
+                previousAxisOrder[i] = [x, nextDim.canvasX];
+                var item = makeItem(i, ii, x, panelSizeX, dimension.originalXIndex, dimension.scatter);
                 renderState.clearOnly = clearOnly;
                 renderBlock(regl, glAes, renderState, setChanged ? lines.blocklinecount : sampleCount, sampleCount, item);
             }
         }
     }
 
-    function destroy() {
-        regl.destroy();
-    }
-
     return {
         setColorDomain: setColorDomain,
-        approach: approach,
         render: renderGLParcoords,
-        destroy: destroy
+        destroy: regl.destroy
     };
 };

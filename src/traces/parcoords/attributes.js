@@ -78,6 +78,20 @@ module.exports = {
             role: 'info',
             description: 'The shown name of the dimension.'
         },
+        hidden: {
+            valType: 'boolean',
+            dflt: false,
+            role: 'info',
+            description: 'Hides the dimension when set to true.'
+        },
+        constraintrange: {
+            valType: 'data_array',
+            role: 'info',
+            description: [
+                'The initial domain extent to which the filter on the dimension is constrained. Must be an array',
+                'of `[fromValue, toValue]` with finite numbers as elements.'
+            ].join(' ')
+        },
         values: {
             valType: 'data_array',
             role: 'info',
@@ -96,6 +110,14 @@ module.exports = {
         min: 32,
         role: 'style',
         description: 'The desired approximate tick distance (in pixels) between axis ticks on an axis.'
+    },
+
+    padding: {
+        valType: 'number',
+        dflt: 80,
+        min: 0,
+        role: 'style',
+        description: 'The desired space for displaying axis labels and domain ranges around the actual parcoords.'
     },
 
     line: extendFlat({},

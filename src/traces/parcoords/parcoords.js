@@ -12,13 +12,14 @@ var lineLayerMaker = require('./lines');
 var Lib = require('../../lib');
 var d3 = require('d3');
 
-function keyFun(d) {
-    return d.key;
-}
+var overdrag = 40;
+var legendWidth = 80;
 
-function repeat(d) {
-    return [d];
-}
+function keyFun(d) {return d.key;}
+
+function repeat(d) {return [d];}
+
+function visible(dimension) {return !dimension.hidden;}
 
 function ordinalScaleSnap(scale, v) {
     var i, a, prevDiff, prevValue, diff;
@@ -32,7 +33,7 @@ function ordinalScaleSnap(scale, v) {
     return a[a.length - 1];
 }
 
-function makeDomainScale(height, padding, integerPadding, dimension) {
+function domainScale(height, padding, integerPadding, dimension) {
     var lo = d3.min(dimension.values);
     var hi = d3.max(dimension.values);
     // convert a zero-domain to a proper domain
@@ -42,48 +43,101 @@ function makeDomainScale(height, padding, integerPadding, dimension) {
     }
     return dimension.integer ?
         d3.scale.ordinal()
-        .domain(d3.range(Math.round(lo), Math.round(hi + 1)))
-        .rangePoints([height - padding, padding], integerPadding) :
+            .domain(d3.range(Math.round(lo), Math.round(hi + 1)))
+            .rangePoints([height - padding, padding], integerPadding) :
         d3.scale.linear()
-        .domain([lo, hi])
-        .range([height - padding, padding]);
+            .domain([lo, hi])
+            .range([height - padding, padding]);
 }
 
-function makeUnitScale(height, padding) {
-    return d3.scale.linear()
-        .range([height - padding, padding]);
+function unitScale(height, padding) {
+    return d3.scale.linear().range([height - padding, padding]);
 }
 
-function makeIntegerScale(integerPadding, dimension) {
+function integerScale(integerPadding, dimension) {
     return dimension.integer && d3.scale.ordinal()
-            .domain(
-                d3.range(0, Math.round(d3.max(dimension.values) + 1) - Math.round(d3.min(dimension.values)))
-                    .map(function(d, _, a) {return d / (a.length - 1);})
-            )
+            .domain(d3.range(0, Math.round(d3.max(dimension.values) + 1) - Math.round(d3.min(dimension.values)))
+                .map(function(d, _, a) {return d / (a.length - 1);}))
             .rangePoints([0, 1], integerPadding);
 }
 
-function makeDomainToUnitScale(values) {
+function domainToUnitScale(values) {
     var extent = d3.extent(values);
     if(extent[0] === extent[1]) {
         extent[0]--;
         extent[1]++;
     }
-    var a = 1 / (extent[1] - extent[0]);
-    var b = -a * extent[0];
-    return function(x) {return a * x + b;};
+    return d3.scale.linear().domain(extent);
 }
 
-function viewModel(lines, width, height, model) {
+function model(layout, d, i) {
 
-    var xScale = d3.scale.ordinal().domain(d3.range(model.dimensions.length)).rangePoints([0, width], 0);
+    var data = d.dimensions;
+
+    var canvasPixelRatio = d.lines.pixelratio;
+    var lines = Lib.extendDeep(d.lines, {
+        color: d.line.color.map(domainToUnitScale(d.line.color)),
+        canvasOverdrag: overdrag * canvasPixelRatio
+    });
+
+    var layoutWidth = layout.width * (d.domain.x[1] - d.domain.x[0]);
+    var layoutHeight = layout.height * (d.domain.y[1] - d.domain.y[0]);
+
+    var padding = d.padding || 80;
+    var translateX = (d.domain.x[0] || 0) * layout.width;
+    var translateY = (d.domain.y[0] || 0) * layout.height;
+    var width = layoutWidth - 2 * padding - legendWidth; // leavig room for the colorbar
+    var height = layoutHeight - 2 * padding;
+
+    var canvasWidth = width * canvasPixelRatio + 2 * lines.canvasOverdrag;
+    var canvasHeight = height * canvasPixelRatio;
+
+    var resizeHeight = d.filterbar.handleheight;
+    var brushVisibleWidth = d.filterbar.width;
+    var brushCaptureWidth = d.filterbar.capturewidth || Math.min(32, brushVisibleWidth + 16);
+
+    return {
+        key: i,
+        dimensions: data,
+        tickDistance: d.tickdistance,
+        unitToColor: d.unitToColor,
+        lines: lines,
+        translateX: translateX,
+        translateY: translateY,
+        padding: padding,
+        canvasWidth: canvasWidth,
+        canvasHeight: canvasHeight,
+        width: width,
+        height: height,
+        brushVisibleWidth: brushVisibleWidth,
+        brushCaptureWidth: brushCaptureWidth,
+        resizeHeight: resizeHeight,
+        canvasPixelRatio: canvasPixelRatio,
+        filterBar: d.filterbar
+    };
+}
+
+function viewModel(model) {
+
+    var lines = model.lines;
+    var width = model.width;
+    var height = model.height;
+    var canvasPixelRatio = model.canvasPixelRatio;
+
+    var xScale = d3.scale.ordinal().domain(d3.range(model.dimensions.filter(visible).length)).rangePoints([0, width], 0);
+
+    var unitPad = lines.verticalpadding / (height * canvasPixelRatio);
+    var unitPadScale = (1 - 2 * unitPad);
+    var paddedUnitScale = function(d) {return unitPad + unitPadScale * d;};
 
     var viewModel = {
         key: model.key,
-        xScale: xScale
+        xScale: xScale,
+        model: model
     };
 
-    viewModel.panels = model.dimensions.map(function(dimension, i) {
+    viewModel.panels = model.dimensions.filter(visible).map(function(dimension, i) {
+        var domainToUnit = domainToUnitScale(dimension.values);
         return {
             key: dimension.id || (dimension.label + ' ' + Math.floor(1e6 * Math.random())),
             label: dimension.label,
@@ -93,16 +147,18 @@ function viewModel(lines, width, height, model) {
             originalXIndex: i,
             height: height,
             values: dimension.values,
+            paddedUnitValues: dimension.values.map(domainToUnit).map(paddedUnitScale),
             xScale: xScale,
             x: xScale(i),
-            unitScale: makeUnitScale(height, lines.verticalpadding),
-            domainScale: makeDomainScale(height, lines.verticalpadding, lines.integerpadding, dimension),
-            integerScale: makeIntegerScale(lines.integerpadding, dimension),
-            domainToUnitScale: makeDomainToUnitScale(dimension.values),
+            canvasX: xScale(i) * canvasPixelRatio,
+            unitScale: unitScale(height, lines.verticalpadding),
+            domainScale: domainScale(height, lines.verticalpadding, lines.integerpadding, dimension),
+            integerScale: integerScale(lines.integerpadding, dimension),
+            domainToUnitScale: domainToUnit,
             pieChartCheat: dimension.pieChartCheat,
-            filter: [0, 1], // dimension.filter || (dimension.filter = [0, 1]),
-            // one more problem: context lines get stuck
-            parent: viewModel
+            filter: dimension.constraintrange ? dimension.constraintrange.map(domainToUnit) : [0, 1],
+            parent: viewModel,
+            model: model
         };
     });
 
@@ -120,36 +176,7 @@ function styleExtentTexts(selection) {
         .style('user-select', 'none');
 }
 
-module.exports = function(root, styledData, layout) {
-
-    var unitToColor = styledData.unitToColor;
-
-    var data = styledData.dimensions;
-    var tickDistance = styledData.tickdistance;
-    var coloringDomainToUnitScale = makeDomainToUnitScale(styledData.line.color);
-    var overdrag = 40;
-    var lines = Lib.extendDeep(styledData.lines, {
-        color: styledData.line.color.map(coloringDomainToUnitScale),
-        overdrag: overdrag
-    });
-
-    var layoutWidth = layout.width * (styledData.domain.x[1] - styledData.domain.x[0]);
-    var layoutHeight = layout.height * (styledData.domain.y[1] - styledData.domain.y[0]);
-
-    var legendWidth = 80;
-    var padding = styledData.padding || 80;
-    var translateX = (styledData.domain.x[0] || 0) * layout.width;
-    var translateY = (styledData.domain.y[0] || 0) * layout.height;
-    var width = layoutWidth - 2 * padding - legendWidth; // leavig room for the colorbar
-    var height = layoutHeight - 2 * padding;
-
-    var canvasPixelRatio = lines.pixelratio;
-    var canvasWidth = (width + 2 * overdrag) * canvasPixelRatio;
-    var canvasHeight = height * canvasPixelRatio;
-
-    var resizeHeight = styledData.filterbar.handleheight;
-    var brushVisibleWidth = styledData.filterbar.width;
-    var brushCaptureWidth = styledData.filterbar.capturewidth || Math.min(32, brushVisibleWidth + 16);
+module.exports = function(root, styledData, layout, callbacks) {
 
     function enterSvgDefs(root) {
         var defs = root.selectAll('defs')
@@ -164,9 +191,9 @@ module.exports = function(root, styledData, layout) {
         filterBarPattern.enter()
             .append('pattern')
             .attr('id', 'filterBarPattern')
-            .attr('width', brushCaptureWidth)
-            .attr('height', height)
-            .attr('x', -brushVisibleWidth)
+            .attr('width', function(d) {return d.model.brushCaptureWidth;})
+            .attr('height', function(d) {return d.model.height;})
+            .attr('x', function(d) {return -d.model.brushVisibleWidth;})
             .attr('patternUnits', 'userSpaceOnUse');
 
         var filterBarPatternGlyph = filterBarPattern.selectAll('rect')
@@ -175,32 +202,31 @@ module.exports = function(root, styledData, layout) {
         filterBarPatternGlyph.enter()
             .append('rect')
             .attr('shape-rendering', 'crispEdges')
-            .attr('width', brushVisibleWidth)
-            .attr('height', height)
-            .attr('x', brushVisibleWidth / 2)
-            .attr('fill', styledData.filterbar.fillcolor)
-            .attr('fill-opacity', styledData.filterbar.fillopacity)
-            .attr('stroke', styledData.filterbar.strokecolor)
-            .attr('stroke-opacity', styledData.filterbar.strokeopacity)
-            .attr('stroke-width', styledData.filterbar.strokewidth);
+            .attr('width', function(d) {return d.model.brushVisibleWidth;})
+            .attr('height', function(d) {return d.model.height;})
+            .attr('x', function(d) {return d.model.brushVisibleWidth / 2;})
+            .attr('fill', function(d) {return d.model.filterBar.fillcolor;})
+            .attr('fill-opacity', function(d) {return d.model.filterBar.fillopacity;})
+            .attr('stroke', function(d) {return d.model.filterBar.strokecolor;})
+            .attr('stroke-opacity', function(d) {return d.model.filterBar.strokeopacity;})
+            .attr('stroke-width', function(d) {return d.model.filterBar.strokewidth;});
     }
 
-    var lastApproached = null;
-
     var parcoordsModel = d3.select(root).selectAll('.parcoordsModel')
-        .data([{key: 0, dimensions: data}], keyFun);
+        .data(styledData.map(model.bind(0, layout)), keyFun);
 
     parcoordsModel.enter()
         .append('div')
+        .style('position', 'relative')
         .classed('parcoordsModel', true);
 
     var parcoordsViewModel = parcoordsModel.selectAll('.parcoordsViewModel')
-        .data(viewModel.bind(0, lines, width, height), keyFun);
+        .data(viewModel, keyFun);
 
     parcoordsViewModel.enter()
         .append('div')
         .classed('parcoordsViewModel', true)
-        .style('transform', 'translate(' + translateX + 'px,' + translateY + 'px)');
+        .style('transform', function(d) {return 'translate(' + d.model.translateX + 'px,' + d.model.translateY + 'px)';});
 
     var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoordsLineLayer')
         .data(function(vm) {
@@ -208,7 +234,8 @@ module.exports = function(root, styledData, layout) {
                 return {
                     key: context ? 'contextLineLayer' : 'focusLineLayer',
                     context: context,
-                    viewModel: vm
+                    viewModel: vm,
+                    model: vm.model
                 };
             });
         }, keyFun);
@@ -217,19 +244,22 @@ module.exports = function(root, styledData, layout) {
         .append('canvas')
         .classed('parcoordsLineLayer', true)
         .style('transform', 'translate(' + (-overdrag) + 'px, 0)')
-        .style('position', 'absolute')
-        .style('padding', padding + 'px')
+        .style('float', 'left')
+        .style('clear', 'both')
+        .style('position', function(d, i) {return i > 0 ? 'absolute' : 'static';})
+        .style('left', 0)
+        .style('padding', function(d) {return d.viewModel.model.padding + 'px';})
         .style('overflow', 'visible')
-        .attr('width', canvasWidth)
-        .attr('height', canvasHeight)
-        .style('width', (width + 2 * overdrag) + 'px')
-        .style('height', height + 'px');
+        .attr('width', function(d) {return d.viewModel.model.canvasWidth;})
+        .attr('height', function(d) {return d.viewModel.model.canvasHeight;})
+        .style('width', function(d) {return (d.viewModel.model.width + 2 * overdrag) + 'px';})
+        .style('height', function(d) {return d.viewModel.model.height + 'px';});
 
     var tweakables = {renderers: [], dimensions: []};
 
     parcoordsLineLayer
         .each(function(d) {
-            var lineLayer = lineLayerMaker(this, lines, canvasWidth, canvasHeight, d.viewModel.panels, unitToColor, d.context);
+            var lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.panels, d.model.unitToColor, d.context);
             d.viewModel[d.key] = lineLayer;
             tweakables.renderers.push(function() {lineLayer.render(d.viewModel.panels, true);});
             lineLayer.render(d.viewModel.panels, !d.context, d.context && !someFiltersActive(d.viewModel));
@@ -242,9 +272,10 @@ module.exports = function(root, styledData, layout) {
         .append('svg')
         .classed('parcoordsControlOverlay', true)
         .attr('overflow', 'visible')
-        .attr('width', width + 2 * padding)
-        .attr('height', height + 2 * padding)
+        .attr('width', function(d) {return d.model.width + 2 * d.model.padding;})
+        .attr('height', function(d) {return d.model.height + 2 * d.model.padding;})
         .style('position', 'absolute')
+        .style('left', 0)
         .style('overflow', 'visible')
         .style('shape-rendering', 'crispEdges')
         .call(enterSvgDefs);
@@ -254,8 +285,16 @@ module.exports = function(root, styledData, layout) {
 
     parcoordsControlView.enter()
         .append('g')
-        .attr('transform', 'translate(' + padding + ',' + padding + ')')
+        .attr('transform', function(d) {return 'translate(' + d.model.padding + ',' + d.model.padding + ')';})
         .classed('parcoordsControlView', true);
+
+    var clearFix = parcoordsViewModel.selectAll('.clearFix')
+        .data(repeat, keyFun);
+
+    clearFix.enter()
+        .append('br')
+        .classed('clearFix', true)
+        .style('clear', 'both');
 
     var panel = parcoordsControlView.selectAll('.panel')
         .data(function(vm) {return vm.panels;}, keyFun);
@@ -281,12 +320,14 @@ module.exports = function(root, styledData, layout) {
                 if(domainBrushing) {
                     return;
                 }
-                d.x = Math.max(-overdrag, Math.min(width + overdrag, d3.event.x));
+                d.x = Math.max(-overdrag, Math.min(d.model.width + overdrag, d3.event.x));
+                d.canvasX = d.x * d.model.canvasPixelRatio;
                 panel
                     .sort(function(a, b) {return a.x - b.x;})
                     .each(function(dd, i) {
                         dd.xIndex = i;
                         dd.x = d === dd ? dd.x : dd.xScale(dd.xIndex);
+                        dd.canvasX = dd.x * dd.model.canvasPixelRatio;
                     });
                 panel.filter(function(dd) {return Math.abs(d.xIndex - dd.xIndex) !== 0;})
                     .attr('transform', function(d) {return 'translate(' + d.xScale(d.xIndex) + ', 0)';});
@@ -300,6 +341,7 @@ module.exports = function(root, styledData, layout) {
                     return;
                 }
                 d.x = d.xScale(d.xIndex);
+                d.canvasX = d.x * d.model.canvasPixelRatio;
                 d3.select(this)
                     .attr('transform', function(d) {return 'translate(' + d.x + ', 0)';});
                 d.parent.contextLineLayer.render(d.parent.panels, false, !someFiltersActive(d.parent));
@@ -324,7 +366,7 @@ module.exports = function(root, styledData, layout) {
         .append('g')
         .classed('axis', true)
         .each(function(d) {
-            var wantedTickCount = height / tickDistance;
+            var wantedTickCount = d.model.height / d.model.tickDistance;
             var scale = d.domainScale;
             var dom = scale.domain();
             d3.select(this)
@@ -371,7 +413,7 @@ module.exports = function(root, styledData, layout) {
     axisTitle.enter()
         .append('text')
         .classed('axisTitle', true)
-        .attr('transform', 'translate(0,' + -(styledData.filterbar.handleheight + 20) + ')')
+        .attr('transform', function(d) {return 'translate(0,' + -(d.model.filterBar.handleheight + 20) + ')';})
         .text(function(d) {return d.label;})
         .attr('text-anchor', 'middle')
         .style('font-family', 'sans-serif')
@@ -392,7 +434,7 @@ module.exports = function(root, styledData, layout) {
     axisExtentTop.enter()
         .append('g')
         .classed('axisExtentTop', true)
-        .attr('transform', 'translate(' + 0 + ',' + -(styledData.filterbar.handleheight - 2) + ')');
+        .attr('transform', function(d) {return 'translate(' + 0 + ',' + -(d.model.filterBar.handleheight - 2) + ')';});
 
     var axisExtentTopText = axisExtentTop.selectAll('.axisExtentTopText')
         .data(repeat, keyFun);
@@ -414,7 +456,7 @@ module.exports = function(root, styledData, layout) {
     axisExtentBottom.enter()
         .append('g')
         .classed('axisExtentBottom', true)
-        .attr('transform', 'translate(' + 0 + ',' + (height + styledData.filterbar.handleheight - 2) + ')');
+        .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + d.model.filterBar.handleheight - 2) + ')';});
 
     var axisExtentBottomText = axisExtentBottom.selectAll('.axisExtentBottomText')
         .data(repeat, keyFun);
@@ -431,15 +473,9 @@ module.exports = function(root, styledData, layout) {
 
     var axisBrushEnter = axisBrush.enter()
         .append('g')
-        .classed('axisBrush', true)
-        .on('mouseenter', function approach(dimension) {
-            if(dimension !== lastApproached) {
-                dimension.parent.focusLineLayer.approach(dimension);
-                lastApproached = dimension;
-            }
-        });
+        .classed('axisBrush', true);
 
-    axisBrush
+    axisBrushEnter
         .each(function(d) {
             if(!d.brush) {
                 d.brush = d3.svg.brush()
@@ -447,33 +483,37 @@ module.exports = function(root, styledData, layout) {
                     .on('brushstart', axisBrushStarted)
                     .on('brush', axisBrushMoved)
                     .on('brushend', axisBrushEnded);
-                d3.select(this).call(d.brush);
+                if(d.filter[0] !== 0 || d.filter[1] !== 1) {
+                    d.brush.extent(d.filter);
+                }
+                d3.select(this).call(d.brush).call(d.brush.event);
             }
         });
 
     axisBrushEnter
         .selectAll('rect')
-        .attr('x', -brushCaptureWidth / 2)
-        .attr('width', brushCaptureWidth);
+        .attr('x', function() {var d = this.parentElement.parentElement.__data__; return -d.model.brushCaptureWidth / 2;})
+        .attr('width', function() {var d = this.parentElement.parentElement.__data__; return d.model.brushCaptureWidth;});
 
     axisBrushEnter
         .selectAll('rect.extent')
         .attr('fill', 'url(#filterBarPattern)')
+        .filter(function(d) {return d.filter[0] === 0 && d.filter[1] === 1;})
         .attr('y', -100); //  // zero-size rectangle pointer issue workaround
 
     axisBrushEnter
         .selectAll('.resize rect')
-        .attr('height', resizeHeight)
+        .attr('height', function() {var d = this.parentElement.parentElement.__data__; return d.model.resizeHeight;})
         .attr('opacity', 0)
         .style('visibility', 'visible');
 
     axisBrushEnter
         .selectAll('.resize.n rect')
-        .attr('y', -resizeHeight + styledData.filterbar.handleoverlap);
+        .attr('y', function() {var d = this.parentElement.parentElement.__data__; return -d.model.resizeHeight + d.model.filterBar.handleoverlap;});
 
     axisBrushEnter
         .selectAll('.resize.s rect')
-        .attr('y', -styledData.filterbar.handleoverlap);
+        .attr('y', function() {var d = this.parentElement.parentElement.__data__; return -d.model.filterBar.handleoverlap;});
 
     var justStarted = false;
     var contextShown = false;
@@ -494,11 +534,6 @@ module.exports = function(root, styledData, layout) {
         }
         var newExtent = reset ? [0, 1] : extent.slice();
         if(newExtent[0] !== filter[0] || newExtent[1] !== filter[1]) {
-/*          // the 1st dimension is special: brushing on it changes the color projection
-            if(dimension.originalXIndex === 0) {
-                dimension.parent['focusLineLayer'].setColorDomain(newExtent);
-            }
-*/
             panels[dimension.xIndex].filter = newExtent;
             dimension.parent.focusLineLayer.render(panels, true);
             var filtersActive = someFiltersActive(dimension.parent);
@@ -516,9 +551,9 @@ module.exports = function(root, styledData, layout) {
     function axisBrushEnded(dimension) {
         var extent = dimension.brush.extent();
         var empty = extent[0] === extent[1];
+        var panels = dimension.parent.panels;
+        var f = panels[dimension.xIndex].filter;
         if(!empty && dimension.integer) {
-            var panels = dimension.parent.panels;
-            var f = panels[dimension.xIndex].filter;
             f[0] = ordinalScaleSnap(dimension.integerScale, f[0]);
             f[1] = ordinalScaleSnap(dimension.integerScale, f[1]);
             if(f[0] === f[1]) {
@@ -529,6 +564,24 @@ module.exports = function(root, styledData, layout) {
             dimension.parent.focusLineLayer.render(panels, true);
         }
         domainBrushing = false;
+        if(callbacks && callbacks.filterChangedCallback) {
+            callbacks.filterChangedCallback({
+                changedDimension: {
+                    key: dimension.key,
+                    label: dimension.label,
+                    domainFilter: f.map(dimension.domainToUnitScale.invert),
+                    fullDomain: f[0] === 0 && f[1] === 1
+                },
+                allDimensions: panels.map(function(p) {
+                    return {
+                        key: p.key,
+                        label: p.label,
+                        domainFilter: p.filter.map(p.domainToUnitScale.invert),
+                        fullDomain: p.filter[0] === 0 && p.filter[1] === 1
+                    };
+                })
+            });
+        }
     }
 
     return tweakables;

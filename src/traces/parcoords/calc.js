@@ -34,7 +34,9 @@ module.exports = function calc(gd, trace) {
         cd.push({
             v: v,
             i: i,
+            constraintrange: vals[i].constraintrange,
             integer: vals[i].integer,
+            hidden: vals[i].hidden,
             label: vals[i].label,
             values: vals[i].values
         });
@@ -73,6 +75,7 @@ module.exports = function calc(gd, trace) {
         tickdistance: trace.tickdistance,
         lines: trace.lines,
         line: trace.line,
+        padding: trace.padding,
         unitToColor: function(d) {
             return polylinearUnitScales.map(function(s) {
                 return s(cScale(d));

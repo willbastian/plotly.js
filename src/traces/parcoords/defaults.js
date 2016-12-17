@@ -50,6 +50,8 @@ function dimensionsDefaults(traceIn, traceOut) {
         coerce('id');
         coerce('label');
         coerce('integer');
+        coerce('hidden');
+        coerce('constraintrange');
         coerce('values');
 
         dimensionOut._index = i;
@@ -75,6 +77,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     handleLineDefaults(traceIn, traceOut, defaultColor, layout, coerce);
 
     coerce('tickdistance');
+    coerce('padding');
 
     coerce('domain.x');
     coerce('domain.y');

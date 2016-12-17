@@ -14,7 +14,20 @@ module.exports = function plot(gd, cdparcoords) {
 
     var fullLayout = gd._fullLayout;
     var root = fullLayout._glcontainer.node();
-    var data = cdparcoords[0][0];
+    var data = cdparcoords.map(function(d) {return d[0];});
 
-    parcoords(root, data, {width: fullLayout.width, height: fullLayout.height});
+    var filterChangedCallback = function(value) {
+        gd.emit('plotly_selected', value);
+    };
+
+    parcoords(
+        root,
+        data,
+        {
+            width: fullLayout.width,
+            height: fullLayout.height
+        },
+        {
+            filterChangedCallback: filterChangedCallback
+        });
 };

@@ -119,6 +119,7 @@ var mock = {
     }]
 };
 
+
 describe('parcoords', function() {
     var mockCopy,
         gd;
@@ -211,4 +212,47 @@ describe('parcoords', function() {
 
 
     });
+
+    it('Calling `Plotly.relayout` with string should amend the preexisting parcoords', function(done) {
+
+        expect(gd.layout.width).toEqual(1184);
+
+        Plotly.relayout(gd, 'width', 500).then(function() {
+
+            expect(gd.data.length).toEqual(1);
+
+            expect(gd.layout.width).toEqual(500);
+            expect(gd.data[0].line.colorscale).toEqual('Jet');
+            expect(gd.data[0].dimensions.length).toEqual(11);
+            expect(gd.data[0].line.cmin).toEqual(-4000);
+            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+            done();
+        });
+
+    });
+
+    it('Calling `Plotly.relayout`with object should amend the preexisting parcoords', function(done) {
+
+        expect(gd.layout.width).toEqual(1184);
+
+        Plotly.relayout(gd, {width: 500}).then(function() {
+
+            expect(gd.data.length).toEqual(1);
+
+            expect(gd.layout.width).toEqual(500);
+            expect(gd.data[0].line.colorscale).toEqual('Jet');
+            expect(gd.data[0].dimensions.length).toEqual(11);
+            expect(gd.data[0].line.cmin).toEqual(-4000);
+            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+            done();
+        });
+
+    });
+
 });

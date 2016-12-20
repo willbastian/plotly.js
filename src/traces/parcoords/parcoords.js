@@ -139,7 +139,7 @@ function viewModel(model) {
     viewModel.panels = model.dimensions.filter(visible).map(function(dimension, i) {
         var domainToUnit = domainToUnitScale(dimension.values);
         return {
-            key: dimension.id || (dimension.label + ' ' + Math.floor(1e6 * Math.random())),
+            key: dimension.id || dimension.label,
             label: dimension.label,
             integer: dimension.integer,
             scatter: dimension.scatter,
@@ -240,29 +240,29 @@ module.exports = function(root, styledData, layout, callbacks) {
             });
         }, keyFun);
 
+    var tweakables = {renderers: [], dimensions: []};
+
     parcoordsLineLayer.enter()
         .append('canvas')
         .classed('parcoordsLineLayer', true)
         .style('transform', 'translate(' + (-overdrag) + 'px, 0)')
         .style('float', 'left')
         .style('clear', 'both')
-        .style('position', function(d, i) {return i > 0 ? 'absolute' : 'static';})
         .style('left', 0)
-        .style('padding', function(d) {return d.viewModel.model.padding + 'px';})
         .style('overflow', 'visible')
+        .style('position', function(d, i) {return i > 0 ? 'absolute' : 'static';});
+
+    parcoordsLineLayer
+        .style('padding', function(d) {return d.viewModel.model.padding + 'px';})
         .attr('width', function(d) {return d.viewModel.model.canvasWidth;})
         .attr('height', function(d) {return d.viewModel.model.canvasHeight;})
         .style('width', function(d) {return (d.viewModel.model.width + 2 * overdrag) + 'px';})
-        .style('height', function(d) {return d.viewModel.model.height + 'px';});
-
-    var tweakables = {renderers: [], dimensions: []};
-
-    parcoordsLineLayer
+        .style('height', function(d) {return d.viewModel.model.height + 'px';})
         .each(function(d) {
-            var lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.panels, d.model.unitToColor, d.context);
-            d.viewModel[d.key] = lineLayer;
-            tweakables.renderers.push(function() {lineLayer.render(d.viewModel.panels, true);});
-            lineLayer.render(d.viewModel.panels, !d.context, d.context && !someFiltersActive(d.viewModel));
+            d.lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.panels, d.model.unitToColor, d.context);
+            d.viewModel[d.key] = d.lineLayer;
+            tweakables.renderers.push(function() {d.lineLayer.render(d.viewModel.panels, true);});
+            d.lineLayer.render(d.viewModel.panels, !d.context, d.context && !someFiltersActive(d.viewModel));
         });
 
     var parcoordsControlOverlay = parcoordsViewModel.selectAll('.parcoordsControlOverlay')
@@ -475,7 +475,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         .append('g')
         .classed('axisBrush', true);
 
-    axisBrushEnter
+    axisBrush
         .each(function(d) {
             if(!d.brush) {
                 d.brush = d3.svg.brush()

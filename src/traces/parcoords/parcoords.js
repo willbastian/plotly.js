@@ -15,6 +15,19 @@ var d3 = require('d3');
 var overdrag = 40;
 var legendWidth = 80;
 
+var filterBar = {
+    width: 4, // Visible width of the filter bar
+    capturewidth: 20, // Mouse-sensitive width for interaction (Fitts law)
+    fillcolor: 'magenta', // Color of the filter bar fill
+    fillopacity: 1, // Filter bar fill opacity
+    strokecolor: 'white', // Color of the filter bar side lines
+    strokeopacity: 1, // Filter bar side stroke opacity
+    strokewidth: 1, // Filter bar side stroke width in pixels
+    handleheight: 16, // Height of the filter bar vertical resize areas on top and bottom
+    handleopacity: 1, // Opacity of the filter bar vertical resize areas on top and bottom
+    handleoverlap: 0 // A larger than 0 value causes overlaps with the filter bar, represented as pixels.'
+};
+
 function keyFun(d) {return d.key;}
 
 function repeat(d) {return [d];}
@@ -98,10 +111,6 @@ function model(layout, d, i) {
     var canvasWidth = width * canvasPixelRatio + 2 * lines.canvasOverdrag;
     var canvasHeight = height * canvasPixelRatio;
 
-    var resizeHeight = d.filterbar.handleheight;
-    var brushVisibleWidth = d.filterbar.width;
-    var brushCaptureWidth = d.filterbar.capturewidth || Math.min(32, brushVisibleWidth + 16);
-
     return {
         key: i,
         dimensions: data,
@@ -115,11 +124,7 @@ function model(layout, d, i) {
         canvasHeight: canvasHeight,
         width: width,
         height: height,
-        brushVisibleWidth: brushVisibleWidth,
-        brushCaptureWidth: brushCaptureWidth,
-        resizeHeight: resizeHeight,
-        canvasPixelRatio: canvasPixelRatio,
-        filterBar: d.filterbar
+        canvasPixelRatio: canvasPixelRatio
     };
 }
 
@@ -197,9 +202,9 @@ module.exports = function(root, styledData, layout, callbacks) {
         filterBarPattern.enter()
             .append('pattern')
             .attr('id', 'filterBarPattern')
-            .attr('width', function(d) {return d.model.brushCaptureWidth;})
+            .attr('width', filterBar.capturewidth)
             .attr('height', function(d) {return d.model.height;})
-            .attr('x', function(d) {return -d.model.brushVisibleWidth;})
+            .attr('x', -filterBar.width)
             .attr('patternUnits', 'userSpaceOnUse');
 
         var filterBarPatternGlyph = filterBarPattern.selectAll('rect')
@@ -208,14 +213,14 @@ module.exports = function(root, styledData, layout, callbacks) {
         filterBarPatternGlyph.enter()
             .append('rect')
             .attr('shape-rendering', 'crispEdges')
-            .attr('width', function(d) {return d.model.brushVisibleWidth;})
+            .attr('width', filterBar.width)
             .attr('height', function(d) {return d.model.height;})
-            .attr('x', function(d) {return d.model.brushVisibleWidth / 2;})
-            .attr('fill', function(d) {return d.model.filterBar.fillcolor;})
-            .attr('fill-opacity', function(d) {return d.model.filterBar.fillopacity;})
-            .attr('stroke', function(d) {return d.model.filterBar.strokecolor;})
-            .attr('stroke-opacity', function(d) {return d.model.filterBar.strokeopacity;})
-            .attr('stroke-width', function(d) {return d.model.filterBar.strokewidth;});
+            .attr('x', filterBar.width / 2)
+            .attr('fill', filterBar.fillcolor)
+            .attr('fill-opacity', filterBar.fillopacity)
+            .attr('stroke', filterBar.strokecolor)
+            .attr('stroke-opacity', filterBar.strokeopacity)
+            .attr('stroke-width', filterBar.strokewidth);
     }
 
     var parcoordsModel = d3.select(root).selectAll('.parcoordsModel')
@@ -419,7 +424,7 @@ module.exports = function(root, styledData, layout, callbacks) {
     axisTitle.enter()
         .append('text')
         .classed('axisTitle', true)
-        .attr('transform', function(d) {return 'translate(0,' + -(d.model.filterBar.handleheight + 20) + ')';})
+        .attr('transform', 'translate(0,' + -(filterBar.handleheight + 20) + ')')
         .text(function(d) {return d.label;})
         .attr('text-anchor', 'middle')
         .style('font-family', 'sans-serif')
@@ -440,7 +445,7 @@ module.exports = function(root, styledData, layout, callbacks) {
     axisExtentTop.enter()
         .append('g')
         .classed('axisExtentTop', true)
-        .attr('transform', function(d) {return 'translate(' + 0 + ',' + -(d.model.filterBar.handleheight - 2) + ')';});
+        .attr('transform', 'translate(' + 0 + ',' + -(filterBar.handleheight - 2) + ')');
 
     var axisExtentTopText = axisExtentTop.selectAll('.axisExtentTopText')
         .data(repeat, keyFun);
@@ -462,7 +467,7 @@ module.exports = function(root, styledData, layout, callbacks) {
     axisExtentBottom.enter()
         .append('g')
         .classed('axisExtentBottom', true)
-        .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + d.model.filterBar.handleheight - 2) + ')';});
+        .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + filterBar.handleheight - 2) + ')';});
 
     var axisExtentBottomText = axisExtentBottom.selectAll('.axisExtentBottomText')
         .data(repeat, keyFun);
@@ -498,8 +503,8 @@ module.exports = function(root, styledData, layout, callbacks) {
 
     axisBrushEnter
         .selectAll('rect')
-        .attr('x', function() {var d = this.parentElement.parentElement.__data__; return -d.model.brushCaptureWidth / 2;})
-        .attr('width', function() {var d = this.parentElement.parentElement.__data__; return d.model.brushCaptureWidth;});
+        .attr('x', -filterBar.capturewidth / 2)
+        .attr('width', filterBar.capturewidth);
 
     axisBrushEnter
         .selectAll('rect.extent')
@@ -509,17 +514,17 @@ module.exports = function(root, styledData, layout, callbacks) {
 
     axisBrushEnter
         .selectAll('.resize rect')
-        .attr('height', function() {var d = this.parentElement.parentElement.__data__; return d.model.resizeHeight;})
+        .attr('height', filterBar.handleheight)
         .attr('opacity', 0)
         .style('visibility', 'visible');
 
     axisBrushEnter
         .selectAll('.resize.n rect')
-        .attr('y', function() {var d = this.parentElement.parentElement.__data__; return -d.model.resizeHeight + d.model.filterBar.handleoverlap;});
+        .attr('y', filterBar.handleoverlap - filterBar.handleheight);
 
     axisBrushEnter
         .selectAll('.resize.s rect')
-        .attr('y', function() {var d = this.parentElement.parentElement.__data__; return -d.model.filterBar.handleoverlap;});
+        .attr('y', filterBar.handleoverlap);
 
     var justStarted = false;
     var contextShown = false;

@@ -81,7 +81,6 @@ module.exports = function calc(gd, trace) {
             return polylinearUnitScales.map(function(s) {
                 return s(cScale(d));
             });
-        },
-        filterbar: trace.filterbar
+        }
     }];
 };

@@ -155,6 +155,15 @@ module.exports = {
                 description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
             },
 
+            focusopacity: {
+                valType: 'number',
+                dflt: 1,
+                min: 0,
+                max: 1,
+                role: 'style',
+                description: 'Opacity of the focus lines, on a scale of 0 (invisible) to 1 (fully opaque).'
+            },
+
             pixelratio: {
                 valType: 'number',
                 dflt: 1,

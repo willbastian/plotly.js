@@ -89,11 +89,11 @@ function adjustDepth(d) {
     return Math.max(depthLimitEpsilon, Math.min(1 - depthLimitEpsilon, d));
 }
 
-function palette(unitToColor, context, contextOpacity) {
+function palette(unitToColor, context, opacity) {
     var result = [];
     for(var j = 0; j < 256; j++) {
         var c = unitToColor(j / 255);
-        result.push((context ? contextColor : c).concat([context ? Math.round(contextOpacity * 255) : 255]));
+        result.push((context ? contextColor : c).concat(opacity));
     }
 
     return result;
@@ -158,7 +158,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
     var dimensionCount = dimensions.length;
     var sampleCount = dimensions[0].values.length;
 
-    var focusAlphaBlending = context; // controlConfig.focusAlphaBlending;
+    var focusAlphaBlending = context || lines.focusalphablending;
 
     var canvasPanelSizeY = canvasHeight;
 
@@ -183,7 +183,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
         type: 'uint8',
         mag: 'nearest',
         min: 'nearest',
-        data: palette(unitToColor, context, lines.contextopacity)
+        data: palette(unitToColor, context, Math.round((context ? lines.contextopacity : lines.focusopacity) * 255))
     });
 
     var glAes = regl({

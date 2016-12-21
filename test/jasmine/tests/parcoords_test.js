@@ -22,6 +22,7 @@ var mock = {
         'type': 'parcoords',
         'tickdistance': 50,
         'line': {
+            'focusopacity': 1,
             'contextopacity': 0.0625,
             'pixelratio': 1,
             'focusalphablending': true,

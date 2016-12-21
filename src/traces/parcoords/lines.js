@@ -20,6 +20,8 @@ var gpuDimensionCount = 64;
 var sectionVertexCount = 2;
 var vec4NumberCount = 4;
 
+var contextColor = [119, 119, 119]; // middle gray to not drawn the focus; looks good on a black or white background
+
 var dummyPixel = new Uint8Array(4);
 function ensureDraw(regl) {
     regl.read({
@@ -87,11 +89,11 @@ function adjustDepth(d) {
     return Math.max(depthLimitEpsilon, Math.min(1 - depthLimitEpsilon, d));
 }
 
-function palette(unitToColor, context, lines_contextcolor, contextOpacity) {
+function palette(unitToColor, context, contextOpacity) {
     var result = [];
     for(var j = 0; j < 256; j++) {
         var c = unitToColor(j / 255);
-        result.push((context ? lines_contextcolor : c).concat([context ? Math.round(contextOpacity * 255) : 255]));
+        result.push((context ? contextColor : c).concat([context ? Math.round(contextOpacity * 255) : 255]));
     }
 
     return result;
@@ -181,7 +183,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
         type: 'uint8',
         mag: 'nearest',
         min: 'nearest',
-        data: palette(unitToColor, context, lines.contextcolor, lines.contextopacity)
+        data: palette(unitToColor, context, lines.contextopacity)
     });
 
     var glAes = regl({

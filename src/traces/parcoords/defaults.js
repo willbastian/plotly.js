@@ -85,7 +85,6 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
 
     coerce('line.color');
 
-    coerce('lines.contextcolor');
     coerce('lines.contextopacity');
     coerce('lines.pixelratio');
     coerce('lines.focusalphablending');

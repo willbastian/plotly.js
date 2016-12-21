@@ -15,6 +15,7 @@ var d3 = require('d3');
 var overdrag = 40;
 var legendWidth = 80;
 var integerPadding = 0;
+var verticalPadding = 2; // otherwise, horizontal lines on top or bottom are of lower width
 
 var filterBar = {
     width: 4, // Visible width of the filter bar
@@ -134,7 +135,7 @@ function viewModel(model) {
 
     var xScale = d3.scale.ordinal().domain(d3.range(dimensions.filter(visible).length)).rangePoints([0, width], 0);
 
-    var unitPad = lines.verticalpadding / (height * canvasPixelRatio);
+    var unitPad = verticalPadding / (height * canvasPixelRatio);
     var unitPadScale = (1 - 2 * unitPad);
     var paddedUnitScale = function(d) {return unitPad + unitPadScale * d;};
 
@@ -159,8 +160,8 @@ function viewModel(model) {
             xScale: xScale,
             x: xScale(i),
             canvasX: xScale(i) * canvasPixelRatio,
-            unitScale: unitScale(height, lines.verticalpadding),
-            domainScale: domainScale(height, lines.verticalpadding, integerPadding, dimension),
+            unitScale: unitScale(height, verticalPadding),
+            domainScale: domainScale(height, verticalPadding, integerPadding, dimension),
             integerScale: integerScale(lines.integerpadding, dimension),
             domainToUnitScale: domainToUnit,
             pieChartCheat: dimension.pieChartCheat,

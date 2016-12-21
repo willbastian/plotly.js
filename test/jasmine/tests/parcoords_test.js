@@ -21,7 +21,7 @@ var mock = {
         'blocklinecount': 5000,
         'lines': {
             'contextopacity': 0.0625,
-            'pixelratio': 2,
+            'pixelratio': 1,
             'focusalphablending': false
         },
 

@@ -7,7 +7,8 @@ var destroyGraphDiv = require('../assets/destroy_graph_div');
 var mock = {
     'layout': {
         'width': 1184,
-        'height': 400
+        'height': 400,
+        'paper_bgcolor': 'rgb(250, 240, 220)'
     },
     'data': [{
 
@@ -17,24 +18,11 @@ var mock = {
         },
 
         'padding': 80,
-        'filterbar': {
-            'width': 4,
-            'fillcolor': 'magenta',
-            'fillopacity': 1,
-            'strokecolor': 'white',
-            'strokeopacity': 1,
-            'strokewidth': 1,
-            'handleheight': 16,
-            'handleoverlap': 0
-        },
         'blocklinecount': 5000,
         'lines': {
-            'contextcolor': [0, 0, 0],
-            'contextopacity': 16,
-            'pixelratio': 1,
-            'focusalphablending': false,
-            'verticalpadding': 2,
-            'integerpadding': 0
+            'contextopacity': 0.0625,
+            'pixelratio': 2,
+            'focusalphablending': false
         },
 
         'type': 'parcoords',

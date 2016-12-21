@@ -156,16 +156,9 @@ module.exports = {
     },
 
     lines: {
-        contextcolor: {
-            valType: 'data_array',
-            dflt: [0, 0, 0],
-            role: 'style',
-            description: 'Color of the context line layer as an RGB triplet where each number is 0..255.'
-        },
-
         contextopacity: {
             valType: 'number',
-            dflt: 0.025,
+            dflt: 0.05,
             min: 0,
             max: 1,
             role: 'style',

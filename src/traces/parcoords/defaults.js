@@ -90,5 +90,4 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     coerce('lines.blocklinecount');
     coerce('lines.focusalphablending');
     coerce('lines.verticalpadding');
-    coerce('lines.integerpadding');
 };

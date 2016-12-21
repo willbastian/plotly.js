@@ -14,6 +14,7 @@ var d3 = require('d3');
 
 var overdrag = 40;
 var legendWidth = 80;
+var integerPadding = 0;
 
 var filterBar = {
     width: 4, // Visible width of the filter bar
@@ -158,7 +159,7 @@ function viewModel(model) {
             x: xScale(i),
             canvasX: xScale(i) * canvasPixelRatio,
             unitScale: unitScale(height, lines.verticalpadding),
-            domainScale: domainScale(height, lines.verticalpadding, lines.integerpadding, dimension),
+            domainScale: domainScale(height, lines.verticalpadding, integerPadding, dimension),
             integerScale: integerScale(lines.integerpadding, dimension),
             domainToUnitScale: domainToUnit,
             pieChartCheat: dimension.pieChartCheat,

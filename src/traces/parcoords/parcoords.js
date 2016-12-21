@@ -91,9 +91,8 @@ function integerScale(integerPadding, dimension) {
 
 function model(layout, d, i) {
 
-    var data = d.dimensions;
-
     var canvasPixelRatio = d.lines.pixelratio;
+
     var lines = Lib.extendDeep(d.lines, {
         color: d.line.color.map(domainToUnitScale({values: d.line.color})),
         canvasOverdrag: overdrag * canvasPixelRatio
@@ -103,25 +102,20 @@ function model(layout, d, i) {
     var layoutHeight = layout.height * (d.domain.y[1] - d.domain.y[0]);
 
     var padding = d.padding || 80;
-    var translateX = (d.domain.x[0] || 0) * layout.width;
-    var translateY = (d.domain.y[0] || 0) * layout.height;
     var width = layoutWidth - 2 * padding - legendWidth; // leavig room for the colorbar
     var height = layoutHeight - 2 * padding;
 
-    var canvasWidth = width * canvasPixelRatio + 2 * lines.canvasOverdrag;
-    var canvasHeight = height * canvasPixelRatio;
-
     return {
         key: i,
-        dimensions: data,
+        dimensions: d.dimensions,
         tickDistance: d.tickdistance,
         unitToColor: d.unitToColor,
         lines: lines,
-        translateX: translateX,
-        translateY: translateY,
+        translateX: (d.domain.x[0] || 0) * layout.width,
+        translateY: (d.domain.y[0] || 0) * layout.height,
         padding: padding,
-        canvasWidth: canvasWidth,
-        canvasHeight: canvasHeight,
+        canvasWidth: width * canvasPixelRatio + 2 * lines.canvasOverdrag,
+        canvasHeight: height * canvasPixelRatio,
         width: width,
         height: height,
         canvasPixelRatio: canvasPixelRatio
@@ -133,9 +127,10 @@ function viewModel(model) {
     var lines = model.lines;
     var width = model.width;
     var height = model.height;
+    var dimensions = model.dimensions;
     var canvasPixelRatio = model.canvasPixelRatio;
 
-    var xScale = d3.scale.ordinal().domain(d3.range(model.dimensions.filter(visible).length)).rangePoints([0, width], 0);
+    var xScale = d3.scale.ordinal().domain(d3.range(dimensions.filter(visible).length)).rangePoints([0, width], 0);
 
     var unitPad = lines.verticalpadding / (height * canvasPixelRatio);
     var unitPadScale = (1 - 2 * unitPad);
@@ -147,7 +142,7 @@ function viewModel(model) {
         model: model
     };
 
-    viewModel.panels = model.dimensions.filter(visible).map(function(dimension, i) {
+    viewModel.panels = dimensions.filter(visible).map(function(dimension, i) {
         var domainToUnit = domainToUnitScale(dimension);
         return {
             key: dimension.id || dimension.label,

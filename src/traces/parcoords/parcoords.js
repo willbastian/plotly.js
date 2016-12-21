@@ -19,7 +19,7 @@ function keyFun(d) {return d.key;}
 
 function repeat(d) {return [d];}
 
-function visible(dimension) {return !dimension.hidden;}
+function visible(dimension) {return !('visible' in dimension) || dimension.visible;}
 
 function dimensionExtent(dimension) {
 

@@ -96,6 +96,7 @@ function model(layout, d, i) {
 
     var lines = Lib.extendDeep(d.lines, {
         color: d.line.color.map(domainToUnitScale({values: d.line.color})),
+        blockLineCount: d.blocklinecount,
         canvasOverdrag: overdrag * canvasPixelRatio
     });
 

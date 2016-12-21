@@ -144,6 +144,17 @@ module.exports = {
         }
     ),
 
+    blocklinecount: {
+        valType: 'number',
+        dflt: 5000,
+        min: 1,
+        role: 'info',
+        description: [
+            'The number of lines rendered in one 16ms rendering frame. Use 2000-5000 on low-end hardware to remain',
+            'responsive, and 10000 .. 100000 on strong hardware for faster rendering.'
+        ].join(' ')
+    },
+
     lines: {
         contextcolor: {
             valType: 'data_array',
@@ -168,17 +179,6 @@ module.exports = {
             max: 4,
             role: 'style',
             description: 'Line rendering pixel ratio. A lower value yields faster rendering but blockier lines.'
-        },
-
-        blocklinecount: {
-            valType: 'number',
-            dflt: 5000,
-            min: 1,
-            role: 'info',
-            description: [
-                'The number of lines rendered in one 16ms rendering frame. Use 2000-5000 on low-end hardware to remain',
-                'responsive, and 10000 .. 100000 on strong hardware for faster rendering.'
-            ].join(' ')
         },
 
         focusalphablending: {

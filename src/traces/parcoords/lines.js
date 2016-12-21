@@ -356,7 +356,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
                 previousAxisOrder[i] = [x, nextDim.canvasX];
                 var item = makeItem(i, ii, x, panelSizeX, dimension.originalXIndex, dimension.scatter);
                 renderState.clearOnly = clearOnly;
-                renderBlock(regl, glAes, renderState, setChanged ? lines.blocklinecount : sampleCount, sampleCount, item);
+                renderBlock(regl, glAes, renderState, setChanged ? lines.blockLineCount : sampleCount, sampleCount, item);
             }
         }
     }

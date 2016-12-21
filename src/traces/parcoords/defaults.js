@@ -78,6 +78,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
 
     coerce('tickdistance');
     coerce('padding');
+    coerce('blocklinecount');
 
     coerce('domain.x');
     coerce('domain.y');
@@ -87,7 +88,6 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     coerce('lines.contextcolor');
     coerce('lines.contextopacity');
     coerce('lines.pixelratio');
-    coerce('lines.blocklinecount');
     coerce('lines.focusalphablending');
     coerce('lines.verticalpadding');
 };

@@ -84,11 +84,19 @@ module.exports = {
             role: 'info',
             description: 'Hides the dimension when set to true.'
         },
+        range: {
+            valType: 'data_array',
+            role: 'info',
+            description: [
+                'The domain range that represents the full, shown axis extent. Defaults to the `values` extent.',
+                'Must be an array of `[fromValue, toValue]` with finite numbers as elements.'
+            ].join(' ')
+        },
         constraintrange: {
             valType: 'data_array',
             role: 'info',
             description: [
-                'The initial domain extent to which the filter on the dimension is constrained. Must be an array',
+                'The domain range to which the filter on the dimension is constrained. Must be an array',
                 'of `[fromValue, toValue]` with finite numbers as elements.'
             ].join(' ')
         },

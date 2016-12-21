@@ -34,6 +34,7 @@ module.exports = function calc(gd, trace) {
         cd.push({
             v: v,
             i: i,
+            range: vals[i].range,
             constraintrange: vals[i].constraintrange,
             integer: vals[i].integer,
             hidden: vals[i].hidden,

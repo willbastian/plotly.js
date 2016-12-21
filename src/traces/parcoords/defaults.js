@@ -51,6 +51,7 @@ function dimensionsDefaults(traceIn, traceOut) {
         coerce('label');
         coerce('integer');
         coerce('hidden');
+        coerce('range');
         coerce('constraintrange');
         coerce('values');
 

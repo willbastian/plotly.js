@@ -21,6 +21,27 @@ function repeat(d) {return [d];}
 
 function visible(dimension) {return !dimension.hidden;}
 
+function dimensionExtent(dimension) {
+
+    var lo = dimension.range ? dimension.range[0] : d3.min(dimension.values);
+    var hi = dimension.range ? dimension.range[1] : d3.max(dimension.values);
+
+    // avoid a degenerate (zero-width) domain
+    if(lo === hi) {
+        if(lo === 0) {
+            // no use to multiplying zero, so add/subtract in this case
+            lo -= 1;
+            hi += 1;
+        } else {
+            // this keeps the range in the order of magnitude of the data
+            lo *= 0.9;
+            hi *= 1.1;
+        }
+    }
+
+    return [lo, hi];
+}
+
 function ordinalScaleSnap(scale, v) {
     var i, a, prevDiff, prevValue, diff;
     for(i = 0, a = scale.range(), prevDiff = Infinity, prevValue = a[0], diff; i < a.length; i++) {
@@ -34,40 +55,25 @@ function ordinalScaleSnap(scale, v) {
 }
 
 function domainScale(height, padding, integerPadding, dimension) {
-    var lo = d3.min(dimension.values);
-    var hi = d3.max(dimension.values);
-    // convert a zero-domain to a proper domain
-    if(!dimension.integer && lo === hi) {
-        lo *= 0.9;
-        hi *= 1.1;
-    }
+    var extent = dimensionExtent(dimension);
     return dimension.integer ?
         d3.scale.ordinal()
-            .domain(d3.range(Math.round(lo), Math.round(hi + 1)))
+            .domain(d3.range(Math.round(extent[0]), Math.round(extent[1] + 1)))
             .rangePoints([height - padding, padding], integerPadding) :
         d3.scale.linear()
-            .domain([lo, hi])
+            .domain(extent)
             .range([height - padding, padding]);
 }
 
-function unitScale(height, padding) {
-    return d3.scale.linear().range([height - padding, padding]);
-}
+function unitScale(height, padding) {return d3.scale.linear().range([height - padding, padding]);}
+function domainToUnitScale(dimension) {return d3.scale.linear().domain(dimensionExtent(dimension));}
 
 function integerScale(integerPadding, dimension) {
+    var extent = dimensionExtent(dimension);
     return dimension.integer && d3.scale.ordinal()
-            .domain(d3.range(0, Math.round(d3.max(dimension.values) + 1) - Math.round(d3.min(dimension.values)))
+            .domain(d3.range(0, Math.round(extent[1] + 1) - Math.round(extent[0]))
                 .map(function(d, _, a) {return d / (a.length - 1);}))
             .rangePoints([0, 1], integerPadding);
-}
-
-function domainToUnitScale(values) {
-    var extent = d3.extent(values);
-    if(extent[0] === extent[1]) {
-        extent[0]--;
-        extent[1]++;
-    }
-    return d3.scale.linear().domain(extent);
 }
 
 function model(layout, d, i) {
@@ -76,7 +82,7 @@ function model(layout, d, i) {
 
     var canvasPixelRatio = d.lines.pixelratio;
     var lines = Lib.extendDeep(d.lines, {
-        color: d.line.color.map(domainToUnitScale(d.line.color)),
+        color: d.line.color.map(domainToUnitScale({values: d.line.color})),
         canvasOverdrag: overdrag * canvasPixelRatio
     });
 
@@ -137,7 +143,7 @@ function viewModel(model) {
     };
 
     viewModel.panels = model.dimensions.filter(visible).map(function(dimension, i) {
-        var domainToUnit = domainToUnitScale(dimension.values);
+        var domainToUnit = domainToUnitScale(dimension);
         return {
             key: dimension.id || dimension.label,
             label: dimension.label,

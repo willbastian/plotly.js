@@ -13,7 +13,6 @@ var attributes = require('./attributes');
 var hasColorscale = require('../../components/colorscale/has_colorscale');
 var colorscaleDefaults = require('../../components/colorscale/defaults');
 
-// todo unify with scatter/line_defaults.js (which needs to handle line width and dash as well)
 var handleLineDefaults = function lineDefaults(traceIn, traceOut, defaultColor, layout, coerce) {
     var markerColor = (traceIn.marker || {}).color;
 
@@ -82,16 +81,6 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
 
     coerce('domain.x');
     coerce('domain.y');
-
-
-    coerce('filterbar.width');
-    coerce('filterbar.fillcolor');
-    coerce('filterbar.fillopacity');
-    coerce('filterbar.strokecolor');
-    coerce('filterbar.strokeopacity');
-    coerce('filterbar.strokewidth');
-    coerce('filterbar.handleheight');
-    coerce('filterbar.handleoverlap');
 
     coerce('line.color');
 

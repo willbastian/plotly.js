@@ -123,8 +123,7 @@ var mock = {
     }]
 };
 
-
-describe('parcoords', function() {
+fdescribe('parcoords', function() {
     var mockCopy,
         gd;
 
@@ -134,7 +133,7 @@ describe('parcoords', function() {
         Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
     });
 
-    afterEach(destroyGraphDiv);
+    //afterEach(destroyGraphDiv);
 
     it('`Plotly.plot` should have proper fields on `gd.data` on initial rendering', function() {
 
@@ -179,7 +178,7 @@ describe('parcoords', function() {
 
     });
 
-    it('Calling `Plotly.restyle` should amend the preexisting parcoords', function(done) {
+    fit('Calling `Plotly.restyle` should amend the preexisting parcoords', function(done) {
 
         expect(gd.data.length).toEqual(1);
 

@@ -27,11 +27,11 @@ var mock = {
             'handleheight': 16,
             'handleoverlap': 0
         },
+        'blocklinecount': 5000,
         'lines': {
             'contextcolor': [0, 0, 0],
             'contextopacity': 16,
             'pixelratio': 1,
-            'blocklinecount': 5000,
             'focusalphablending': false,
             'verticalpadding': 2,
             'integerpadding': 0
@@ -140,6 +140,7 @@ describe('parcoords', function() {
         expect(gd.data.length).toEqual(1);
         expect(gd.data[0].dimensions.length).toEqual(11);
         expect(gd.data[0].line.cmin).toEqual(-4000);
+        expect(gd.data[0].blocklinecount).toEqual(5000);
         expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
         expect(gd.data[0].dimensions[4].visible).toEqual(true);
         expect(gd.data[0].dimensions[5].visible).toEqual(false);

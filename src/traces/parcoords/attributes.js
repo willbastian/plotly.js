@@ -165,11 +165,11 @@ module.exports = {
 
         contextopacity: {
             valType: 'number',
-            dflt: 16,
+            dflt: 0.025,
             min: 0,
-            max: 255,
+            max: 1,
             role: 'style',
-            description: 'Opacity of the context lines, on a scale of 0 (invisible) to 255 (fully opaque).'
+            description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
         },
 
         pixelratio: {

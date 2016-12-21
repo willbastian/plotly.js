@@ -93,9 +93,9 @@ function integerScale(integerPadding, dimension) {
 
 function model(layout, d, i) {
 
-    var canvasPixelRatio = d.lines.pixelratio;
+    var canvasPixelRatio = d.line.pixelratio;
 
-    var lines = Lib.extendDeep(d.lines, {
+    var lines = Lib.extendDeep(d.line, {
         color: d.line.color.map(domainToUnitScale({values: d.line.color})),
         blockLineCount: d.blocklinecount,
         canvasOverdrag: overdrag * canvasPixelRatio

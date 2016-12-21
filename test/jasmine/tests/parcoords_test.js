@@ -19,15 +19,13 @@ var mock = {
 
         'padding': 80,
         'blocklinecount': 5000,
-        'lines': {
-            'contextopacity': 0.0625,
-            'pixelratio': 1,
-            'focusalphablending': false
-        },
-
         'type': 'parcoords',
         'tickdistance': 50,
         'line': {
+            'contextopacity': 0.0625,
+            'pixelratio': 1,
+            'focusalphablending': true,
+
             'showscale': true,
             'reversescale': true,
             'colorscale': 'Jet',

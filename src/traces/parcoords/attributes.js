@@ -109,7 +109,7 @@ module.exports = {
                 'will be truncated). Each value must be a finite number.'
             ].join(' ')
         },
-        description: 'The dimensions (variables) of the parallel coordinates chart.'
+        description: 'The dimensions (variables) of the parallel coordinates chart. 2..63 dimensions are supported.'
     },
 
     tickdistance: {

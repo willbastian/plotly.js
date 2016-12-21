@@ -87,11 +87,11 @@ function adjustDepth(d) {
     return Math.max(depthLimitEpsilon, Math.min(1 - depthLimitEpsilon, d));
 }
 
-function palette(unitToColor, context, lines_contextcolor, lines_contextopacity) {
+function palette(unitToColor, context, lines_contextcolor, contextOpacity) {
     var result = [];
     for(var j = 0; j < 256; j++) {
         var c = unitToColor(j / 255);
-        result.push((context ? lines_contextcolor : c).concat([context ? lines_contextopacity : 255]));
+        result.push((context ? lines_contextcolor : c).concat([context ? Math.round(contextOpacity * 255) : 255]));
     }
 
     return result;

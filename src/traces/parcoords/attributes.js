@@ -197,15 +197,6 @@ module.exports = {
             max: 4,
             role: 'style',
             description: 'Lines have thickness, and without padding, horizontal lines at extreme values appear thinner.'
-        },
-
-        integerpadding: {
-            valType: 'number',
-            dflt: 0,
-            min: 0,
-            max: 1,
-            role: 'style',
-            description: 'Setting it to `1` offsets the extreme points on integer axes by half pitch.'
         }
     }
 };

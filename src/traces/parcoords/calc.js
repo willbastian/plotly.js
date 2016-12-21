@@ -75,7 +75,6 @@ module.exports = function calc(gd, trace) {
         dimensions: cd,
         tickdistance: trace.tickdistance,
         blocklinecount: trace.blocklinecount,
-        lines: trace.lines,
         line: trace.line,
         padding: trace.padding,
         unitToColor: function(d) {

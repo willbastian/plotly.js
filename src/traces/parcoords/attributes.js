@@ -129,7 +129,9 @@ module.exports = {
     },
 
     line: extendFlat({},
+
         colorAttributes('line'),
+
         {
             showscale: {
                 valType: 'boolean',
@@ -141,6 +143,35 @@ module.exports = {
                 ].join(' ')
             },
             colorbar: colorbarAttrs
+        },
+
+        {
+            contextopacity: {
+                valType: 'number',
+                dflt: 0.05,
+                min: 0,
+                max: 1,
+                role: 'style',
+                description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
+            },
+
+            pixelratio: {
+                valType: 'number',
+                dflt: 1,
+                min: 0.25,
+                max: 4,
+                role: 'style',
+                description: 'Line rendering pixel ratio. A lower value yields faster rendering but blockier lines.'
+            },
+
+            focusalphablending: {
+                valType: 'boolean',
+                dflt: false,
+                role: 'style',
+                description: [
+                    'By default, the rendered lines are opaque. Setting it to `true` is necessary if opacity is needed.'
+                ].join(' ')
+            }
         }
     ),
 
@@ -153,34 +184,5 @@ module.exports = {
             'The number of lines rendered in one 16ms rendering frame. Use 2000-5000 on low-end hardware to remain',
             'responsive, and 10000 .. 100000 on strong hardware for faster rendering.'
         ].join(' ')
-    },
-
-    lines: {
-        contextopacity: {
-            valType: 'number',
-            dflt: 0.05,
-            min: 0,
-            max: 1,
-            role: 'style',
-            description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
-        },
-
-        pixelratio: {
-            valType: 'number',
-            dflt: 1,
-            min: 0.25,
-            max: 4,
-            role: 'style',
-            description: 'Line rendering pixel ratio. A lower value yields faster rendering but blockier lines.'
-        },
-
-        focusalphablending: {
-            valType: 'boolean',
-            dflt: false,
-            role: 'style',
-            description: [
-                'By default, the rendered lines are opaque. Setting it to `true` is necessary if opacity is needed.'
-            ].join(' ')
-        }
     }
 };

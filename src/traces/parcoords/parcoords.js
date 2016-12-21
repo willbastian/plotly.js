@@ -127,7 +127,6 @@ function model(layout, d, i) {
 
 function viewModel(model) {
 
-    var lines = model.lines;
     var width = model.width;
     var height = model.height;
     var dimensions = model.dimensions;
@@ -162,7 +161,7 @@ function viewModel(model) {
             canvasX: xScale(i) * canvasPixelRatio,
             unitScale: unitScale(height, verticalPadding),
             domainScale: domainScale(height, verticalPadding, integerPadding, dimension),
-            integerScale: integerScale(lines.integerpadding, dimension),
+            integerScale: integerScale(integerPadding, dimension),
             domainToUnitScale: domainToUnit,
             pieChartCheat: dimension.pieChartCheat,
             filter: dimension.constraintrange ? dimension.constraintrange.map(domainToUnit) : [0, 1],

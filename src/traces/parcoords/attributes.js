@@ -188,15 +188,6 @@ module.exports = {
             description: [
                 'By default, the rendered lines are opaque. Setting it to `true` is necessary if opacity is needed.'
             ].join(' ')
-        },
-
-        verticalpadding: {
-            valType: 'number',
-            dflt: 2,
-            min: 0,
-            max: 4,
-            role: 'style',
-            description: 'Lines have thickness, and without padding, horizontal lines at extreme values appear thinner.'
         }
     }
 };

@@ -89,5 +89,4 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     coerce('lines.contextopacity');
     coerce('lines.pixelratio');
     coerce('lines.focusalphablending');
-    coerce('lines.verticalpadding');
 };

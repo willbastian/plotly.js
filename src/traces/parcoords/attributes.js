@@ -13,23 +13,17 @@ var colorbarAttrs = require('../../components/colorbar/attributes');
 
 var extendFlat = require('../../lib/extend').extendFlat;
 
-/*
-todo comments (some of them relating to items that should be unexposed anyway):
-- `domain` should be DRYed up across other plots
-- add attribute to `dimensions` for switching dimensions on/off
-- add attribute to `dimensions` for initial filter domain
-- clarify what the actual use of `_isLinkedToArray: 'dimension'` - esp. the value - is below
-- add attribute for color clamping
-- switch to ploty standard color notation rather than RGB tuple
-- switch to 0..1 for opacity rather than 0..255
-- tie pixelratio to window.devicePixelRatio in `defaults.js`
-- consider if we need a `focusopacity` attribute besides focusalphablending; making settings more symmetric between
-      focus and context
-- hardcode verticalpadding
-- this minor but ergonomic `integerpadding` isn't fully working yet - either finish it or remove it
-*/
-
 module.exports = {
+
+    id: {
+        valType: 'string',
+        dflt: '0',
+        role: 'info',
+        description: [
+            'Identifier of a `parcoords` plot. Invoking `Plotly.plot` with the same `id` overwrites',
+            'the `parcoords`, while specifying a different `id` will add a new row.'
+        ].join(' ')
+    },
 
     domain: {
         x: {

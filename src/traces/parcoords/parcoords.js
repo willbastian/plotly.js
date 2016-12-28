@@ -109,7 +109,7 @@ function model(layout, d, i) {
     var height = layoutHeight - 2 * padding;
 
     return {
-        key: i,
+        key: d.id || ('gensym' + i),
         dimensions: d.dimensions,
         tickDistance: d.tickdistance,
         unitToColor: d.unitToColor,
@@ -494,7 +494,7 @@ module.exports = function(root, styledData, layout, callbacks) {
                 if(d.filter[0] !== 0 || d.filter[1] !== 1) {
                     d.brush.extent(d.filter);
                 }
-                d3.select(this).call(d.brush).call(d.brush.event);
+                d3.select(this).call(d.brush);
             }
         });
 
@@ -577,6 +577,8 @@ module.exports = function(root, styledData, layout, callbacks) {
                 changedDimension: {
                     key: dimension.key,
                     label: dimension.label,
+                    modelIndex: dimension.model.key,
+                    index: panels.indexOf(dimension),
                     domainFilter: f.map(dimension.domainToUnitScale.invert),
                     fullDomain: f[0] === 0 && f[1] === 1
                 },

@@ -4,6 +4,53 @@ var Lib = require('@src/lib');
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
 
+var mock2 = {
+    'layout': {
+        'width': 1184,
+        'height': 400,
+        'paper_bgcolor': 'rgb(250, 240, 220)'
+    },
+    'data': [{
+
+        'domain': {
+            'x': [0, 1],
+            'y': [0, 1]
+        },
+
+        'padding': 80,
+        'blocklinecount': 5000,
+        'type': 'parcoords',
+        'tickdistance': 50,
+        'line': {
+            'focusopacity': 1,
+            'contextopacity': 0.0625,
+            'pixelratio': 1,
+            'focusalphablending': true,
+
+            'showscale': true,
+            'reversescale': true,
+            'colorscale': 'Jet',
+            'cmin': -4000,
+            'cmax': -100,
+            'color': [-41, -1317, -164, -1856, -79, -931, -191, -2983, -341, -3846]
+        },
+        'dimensions': [
+            {
+                'id': 'Block height',
+                'constraintrange': [200, 700],
+                'label': 'Block height',
+                'values': [321, 534, 542, 674, 31, 674, 124, 246, 456, 743]
+            },
+            {
+                'id': 'Block width',
+                'label': 'Block width',
+                'range': [0, 700000],
+                'values': [268630, 489543, 379086, 600000, 489543, 268630, 600000, 379086, 268630, 489543]
+            }
+        ]
+    }]
+};
+
 var mock = {
     'layout': {
         'width': 1184,
@@ -102,7 +149,33 @@ var mock = {
     }]
 };
 
-describe('parcoords', function() {
+describe('parcoords edge cases', function() {
+
+    // afterEach(destroyGraphDiv);
+
+    fit('`Plotly.plot` should have proper fields on `gd.data` on initial rendering', function() {
+
+        var mockCopy = Lib.extendDeep({}, mock2);
+        var gd = createGraphDiv();
+        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+            expect(gd.data.length).toEqual(1);
+            expect(gd.data[0].dimensions.length).toEqual(11);
+            expect(gd.data[0].line.cmin).toEqual(-4000);
+            expect(gd.data[0].blocklinecount).toEqual(5000);
+            expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
+            expect(gd.data[0].dimensions[0].range).not.toBeDefined();
+            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+            expect(gd.data[0].dimensions[1].range).toBeDefined();
+            expect(gd.data[0].dimensions[1].range).toEqual([0, 700000]);
+            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+        });
+    });
+});
+
+describe('parcoords basic use', function() {
     var mockCopy,
         gd;
 

@@ -343,7 +343,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
                 colorClamp: colorClamp,
                 scatter: scatter || 0,
                 scissorX: I === leftmostIndex ? 0 : x + overdrag,
-                scissorWidth: I === rightmostIndex ? 2 * panelSizeX + overdrag : panelSizeX + 1 + (I === leftmostIndex ? x + overdrag : 0)
+                scissorWidth: I === rightmostIndex ? 2 * panelSizeX + overdrag + (I === leftmostIndex ? x + overdrag : 0) : panelSizeX + 1 + (I === leftmostIndex ? x + overdrag : 0)
             };
         }
 

@@ -151,6 +151,7 @@ function viewModel(model) {
             key: dimension.id || dimension.label,
             label: dimension.label,
             tickvals: dimension.tickvals || false,
+            ticktext: dimension.ticktext || false,
             ordinal: !!dimension.tickvals,
             scatter: dimension.scatter,
             xIndex: i,
@@ -379,6 +380,7 @@ module.exports = function(root, styledData, layout, callbacks) {
             var wantedTickCount = d.model.height / d.model.tickDistance;
             var scale = d.domainScale;
             var dom = scale.domain();
+            var texts = d.ticktext;
             d3.select(this)
                 .call(d3.svg.axis()
                     .orient('left')
@@ -386,7 +388,9 @@ module.exports = function(root, styledData, layout, callbacks) {
                     .outerTickSize(2)
                     .ticks(wantedTickCount, '3s') // works for continuous scales only...
                     .tickValues(d.ordinal ? // and this works for ordinal scales
-                        dom.filter(function(d, i) {return !(i % Math.round((dom.length / wantedTickCount)));}) :
+                        dom
+                            .filter(function(d, i) {return !(i % Math.round((dom.length / wantedTickCount)));})
+                            .map(function(d, i) {return texts && texts[i] || d}):
                         null)
                     .scale(scale));
         });

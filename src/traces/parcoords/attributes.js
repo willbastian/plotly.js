@@ -68,6 +68,7 @@ module.exports = {
             description: 'The shown name of the dimension.'
         },
         tickvals: axesAttrs.tickvals,
+        ticktext: axesAttrs.ticktext,
         visible: {
             valType: 'boolean',
             dflt: true,

@@ -4,10 +4,86 @@ var Lib = require('@src/lib');
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
 
-var mock2 = {
+var mock0 = { // mock with zero dimensions; special case, as no dimension can be rendered
     'layout': {
-        'width': 1184,
+        'width': 2184,
         'height': 400,
+        'paper_bgcolor': 'rgb(250, 240, 220)'
+    },
+    'data': [{
+
+        'domain': {
+            'x': [0, 1],
+            'y': [0, 1]
+        },
+
+        'padding': 80,
+        'blocklinecount': 5000,
+        'type': 'parcoords',
+        'tickdistance': 50,
+        'line': {
+            'focusopacity': 1,
+            'contextopacity': 0.0625,
+            'pixelratio': 1,
+            'focusalphablending': true,
+
+            'showscale': true,
+            'reversescale': true,
+            'colorscale': 'Jet',
+            'cmin': -4000,
+            'cmax': -100,
+            'color': [-41, -1317, -164, -1856, -79, -931, -191, -2983, -341, -3846]
+        },
+        'dimensions': []
+    }]
+};
+
+var mock1 = { // mock with one dimension (zero panel); special case, as no panel can be rendered
+    'layout': {
+        'width': 2184,
+        'height': 400,
+        'paper_bgcolor': 'rgb(250, 240, 220)'
+    },
+    'data': [{
+
+        'domain': {
+            'x': [0, 1],
+            'y': [0, 1]
+        },
+
+        'padding': 80,
+        'blocklinecount': 5000,
+        'type': 'parcoords',
+        'tickdistance': 50,
+        'line': {
+            'focusopacity': 1,
+            'contextopacity': 0.0625,
+            'pixelratio': 1,
+            'focusalphablending': true,
+
+            'showscale': true,
+            'reversescale': true,
+            'colorscale': 'Jet',
+            'cmin': -4000,
+            'cmax': -100,
+            'color': [-41, -1317, -164, -1856, -79, -931, -191, -2983, -341, -3846]
+        },
+        'dimensions': [
+            {
+                'id': 'Block height',
+                'constraintrange': [200, 700],
+                'label': 'Block height',
+                'values': [321, 534, 542, 674, 31, 674, 124, 246, 456, 743]
+            }
+        ]
+    }]
+};
+
+
+var mock2 = { // mock with two dimensions (one panel); special case, e.g. left and right panel is obv. the same
+    'layout': {
+        'width': 300,
+        'height': 300,
         'paper_bgcolor': 'rgb(250, 240, 220)'
     },
     'data': [{
@@ -151,28 +227,59 @@ var mock = {
 
 describe('parcoords edge cases', function() {
 
-    // afterEach(destroyGraphDiv);
+    afterEach(destroyGraphDiv);
 
-    fit('`Plotly.plot` should have proper fields on `gd.data` on initial rendering', function() {
+    it('Works fine with one panel only', function(done) {
 
         var mockCopy = Lib.extendDeep({}, mock2);
         var gd = createGraphDiv();
         Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
 
             expect(gd.data.length).toEqual(1);
-            expect(gd.data[0].dimensions.length).toEqual(11);
+            expect(gd.data[0].dimensions.length).toEqual(2);
+            expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
+            expect(gd.data[0].dimensions[0].range).not.toBeDefined();
+            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+            expect(gd.data[0].dimensions[0].constraintrange).toEqual([200, 700]);
+            expect(gd.data[0].dimensions[1].range).toBeDefined();
+            expect(gd.data[0].dimensions[1].range).toEqual([0, 700000]);
+            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+            done();
+        });
+    });
+
+    it('Do something sensible if there is no panel i.e. dimension count is less than 2', function(done) {
+
+        var mockCopy = Lib.extendDeep({}, mock1);
+        var gd = createGraphDiv();
+        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+            expect(gd.data.length).toEqual(1);
+            expect(gd.data[0].dimensions.length).toEqual(1);
             expect(gd.data[0].line.cmin).toEqual(-4000);
             expect(gd.data[0].blocklinecount).toEqual(5000);
             expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
             expect(gd.data[0].dimensions[0].range).not.toBeDefined();
             expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
-            expect(gd.data[0].dimensions[1].range).toBeDefined();
-            expect(gd.data[0].dimensions[1].range).toEqual([0, 700000]);
-            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+            expect(gd.data[0].dimensions[0].constraintrange).toEqual([200, 700]);
 
+            done();
         });
     });
+
+    it('Does not error with zero dimensions', function(done) {
+
+        var mockCopy = Lib.extendDeep({}, mock0);
+        var gd = createGraphDiv();
+        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+            expect(gd.data.length).toEqual(1);
+            expect(gd.data[0].dimensions.length).toEqual(0);
+            done();
+        });
+    });
+
 });
 
 describe('parcoords basic use', function() {

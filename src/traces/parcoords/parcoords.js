@@ -85,7 +85,7 @@ function domainScale(height, padding, dimension) {
 function unitScale(height, padding) {return d3.scale.linear().range([height - padding, padding]);}
 function domainToUnitScale(dimension) {return d3.scale.linear().domain(dimensionExtent(dimension));}
 
-function integerScale(dimension) {
+function ordinalScale(dimension) {
     var extent = dimensionExtent(dimension);
     return dimension.tickvals && d3.scale.ordinal()
             .domain(dimension.tickvals)
@@ -151,7 +151,7 @@ function viewModel(model) {
             key: dimension.id || dimension.label,
             label: dimension.label,
             tickvals: dimension.tickvals || false,
-            integer: !!dimension.tickvals,
+            ordinal: !!dimension.tickvals,
             scatter: dimension.scatter,
             xIndex: i,
             originalXIndex: i,
@@ -163,7 +163,7 @@ function viewModel(model) {
             canvasX: xScale(i) * canvasPixelRatio,
             unitScale: unitScale(height, verticalPadding),
             domainScale: domainScale(height, verticalPadding, dimension),
-            integerScale: integerScale(dimension),
+            ordinalScale: ordinalScale(dimension),
             domainToUnitScale: domainToUnit,
             pieChartCheat: dimension.pieChartCheat,
             filter: dimension.constraintrange ? dimension.constraintrange.map(domainToUnit) : [0, 1],
@@ -385,7 +385,7 @@ module.exports = function(root, styledData, layout, callbacks) {
                     .tickSize(4)
                     .outerTickSize(2)
                     .ticks(wantedTickCount, '3s') // works for continuous scales only...
-                    .tickValues(d.integer ? // and this works for ordinal scales
+                    .tickValues(d.ordinal ? // and this works for ordinal scales
                         dom.filter(function(d, i) {return !(i % Math.round((dom.length / wantedTickCount)));}) :
                         null)
                     .scale(scale));
@@ -450,7 +450,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         .data(repeat, keyFun);
 
     function formatExtreme(d) {
-        return d.integer ? d3.format('.0s') : d3.format('.3s');
+        return d.ordinal ? d3.format('.0s') : d3.format('.3s');
     }
 
     axisExtentTopText.enter()
@@ -563,9 +563,9 @@ module.exports = function(root, styledData, layout, callbacks) {
         var empty = extent[0] === extent[1];
         var panels = dimension.parent.panels;
         var f = panels[dimension.xIndex].filter;
-        if(!empty && dimension.integer) {
-            f[0] = ordinalScaleSnap(dimension.integerScale, f[0]);
-            f[1] = ordinalScaleSnap(dimension.integerScale, f[1]);
+        if(!empty && dimension.ordinal) {
+            f[0] = ordinalScaleSnap(dimension.ordinalScale, f[0]);
+            f[1] = ordinalScaleSnap(dimension.ordinalScale, f[1]);
             if(f[0] === f[1]) {
                 f[0] = Math.max(0, f[0] - 0.05);
                 f[1] = Math.min(1, f[1] + 0.05);

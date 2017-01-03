@@ -12,9 +12,9 @@ var lineLayerMaker = require('./lines');
 var Lib = require('../../lib');
 var d3 = require('d3');
 
+
 var overdrag = 40;
 var legendWidth = 80;
-var integerPadding = 0;
 var verticalPadding = 2; // otherwise, horizontal lines on top or bottom are of lower width
 
 var filterBar = {
@@ -69,12 +69,14 @@ function ordinalScaleSnap(scale, v) {
     return a[a.length - 1];
 }
 
-function domainScale(height, padding, integerPadding, dimension) {
+function domainScale(height, padding, dimension) {
     var extent = dimensionExtent(dimension);
-    return dimension.integer ?
+    return dimension.tickvals ?
         d3.scale.ordinal()
-            .domain(d3.range(Math.round(extent[0]), Math.round(extent[1] + 1)))
-            .rangePoints([height - padding, padding], integerPadding) :
+            .domain(dimension.tickvals)
+            .range(dimension.tickvals
+                .map(function(d) {return (d - extent[0]) / (extent[1] - extent[0]);})
+                .map(function(d) {return (height - padding + d * (padding - (height - padding)));})) :
         d3.scale.linear()
             .domain(extent)
             .range([height - padding, padding]);
@@ -83,12 +85,11 @@ function domainScale(height, padding, integerPadding, dimension) {
 function unitScale(height, padding) {return d3.scale.linear().range([height - padding, padding]);}
 function domainToUnitScale(dimension) {return d3.scale.linear().domain(dimensionExtent(dimension));}
 
-function integerScale(integerPadding, dimension) {
+function integerScale(dimension) {
     var extent = dimensionExtent(dimension);
-    return dimension.integer && d3.scale.ordinal()
-            .domain(d3.range(0, Math.round(extent[1] + 1) - Math.round(extent[0]))
-                .map(function(d, _, a) {return d / (a.length - 1);}))
-            .rangePoints([0, 1], integerPadding);
+    return dimension.tickvals && d3.scale.ordinal()
+            .domain(dimension.tickvals)
+            .range(dimension.tickvals.map(function(d) {return (d - extent[0]) / (extent[1] - extent[0]);}));
 }
 
 function model(layout, d, i) {
@@ -149,7 +150,8 @@ function viewModel(model) {
         return {
             key: dimension.id || dimension.label,
             label: dimension.label,
-            integer: dimension.integer,
+            tickvals: dimension.tickvals || false,
+            integer: !!dimension.tickvals,
             scatter: dimension.scatter,
             xIndex: i,
             originalXIndex: i,
@@ -160,8 +162,8 @@ function viewModel(model) {
             x: xScale(i),
             canvasX: xScale(i) * canvasPixelRatio,
             unitScale: unitScale(height, verticalPadding),
-            domainScale: domainScale(height, verticalPadding, integerPadding, dimension),
-            integerScale: integerScale(integerPadding, dimension),
+            domainScale: domainScale(height, verticalPadding, dimension),
+            integerScale: integerScale(dimension),
             domainToUnitScale: domainToUnit,
             pieChartCheat: dimension.pieChartCheat,
             filter: dimension.constraintrange ? dimension.constraintrange.map(domainToUnit) : [0, 1],

@@ -10,6 +10,7 @@
 
 var colorAttributes = require('../../components/colorscale/color_attributes');
 var colorbarAttrs = require('../../components/colorbar/attributes');
+var axesAttrs = require('../../plots/cartesian/layout_attributes');
 
 var extendFlat = require('../../lib/extend').extendFlat;
 
@@ -66,12 +67,7 @@ module.exports = {
             role: 'info',
             description: 'The shown name of the dimension.'
         },
-        integer: {
-            valType: 'boolean',
-            dflt: false,
-            role: 'info',
-            description: 'The shown name of the dimension.'
-        },
+        tickvals: axesAttrs.tickvals,
         visible: {
             valType: 'boolean',
             dflt: true,

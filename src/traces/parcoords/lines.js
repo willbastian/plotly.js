@@ -287,15 +287,15 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
             return dimensions[index];
         }
 
-        var leftmostIndex, rightmostIndex, lowestX = Infinity, highestX = -Infinity;
+        var leftmost, rightmost, lowestX = Infinity, highestX = -Infinity;
         for(I = 0; I < panelCount; I++) {
             if(dimensions[I].canvasX > highestX) {
                 highestX = dimensions[I].canvasX;
-                rightmostIndex = I;
+                rightmost = I;
             }
             if(dimensions[I].canvasX < lowestX) {
                 lowestX = dimensions[I].canvasX;
-                leftmostIndex = I;
+                leftmost = I;
             }
         }
 
@@ -342,8 +342,8 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
 
                 colorClamp: colorClamp,
                 scatter: scatter || 0,
-                scissorX: I === leftmostIndex ? 0 : x + overdrag,
-                scissorWidth: I === rightmostIndex ? 2 * panelSizeX + overdrag + (I === leftmostIndex ? x + overdrag : 0) : panelSizeX + 1 + (I === leftmostIndex ? x + overdrag : 0)
+                scissorX: I === leftmost ? 0 : x + overdrag,
+                scissorWidth: (I === rightmost ? canvasWidth - x + overdrag : panelSizeX + 0.5) + (I === leftmost ? x + overdrag : 0)
             };
         }
 

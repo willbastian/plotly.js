@@ -48,7 +48,7 @@ function dimensionsDefaults(traceIn, traceOut) {
 
         coerce('id');
         coerce('label');
-        coerce('integer');
+        coerce('tickvals');
         coerce('visible');
         coerce('range');
         coerce('constraintrange');

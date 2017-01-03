@@ -36,7 +36,7 @@ module.exports = function calc(gd, trace) {
             i: i,
             range: vals[i].range,
             constraintrange: vals[i].constraintrange,
-            integer: vals[i].integer,
+            tickvals: vals[i].tickvals,
             visible: vals[i].visible,
             label: vals[i].label,
             values: vals[i].values

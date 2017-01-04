@@ -226,7 +226,7 @@ var mock = {
 
 describe('parcoords edge cases', function() {
 
-    afterEach(destroyGraphDiv);
+    //afterEach(destroyGraphDiv);
 
     it('Works fine with one panel only', function(done) {
 
@@ -286,6 +286,33 @@ describe('parcoords edge cases', function() {
 
         mockCopy.layout.width = 1680;
         for(i = 0; i < 63; i++) {
+            newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
+            newDimension.id = "S" + i;
+            newDimension.label = "S" + i;
+            delete newDimension.constraintrange;
+            newDimension.range = [0, 999];
+            for(j = 0; j < 100; j++) {
+                newDimension.values[j] = Math.floor(1000 * Math.random());
+            }
+            mockCopy.data[0].dimensions[i] = newDimension;
+        }
+
+        var gd = createGraphDiv();
+        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+            expect(gd.data.length).toEqual(1);
+            expect(gd.data[0].dimensions.length).toEqual(63);
+            done();
+        });
+    });
+
+    fit('Truncates 63+ dimensions to 63', function(done) {
+
+        var mockCopy = Lib.extendDeep({}, mock1);
+        var newDimension, i, j;
+
+        mockCopy.layout.width = 1680;
+        for(i = 0; i < 70; i++) {
             newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
             newDimension.id = "S" + i;
             newDimension.label = "S" + i;

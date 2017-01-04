@@ -334,7 +334,7 @@ describe('parcoords', function() {
 
             var mockCopy = Lib.extendDeep({}, mock2);
             var dim, i, j;
-            var values = [[0, 1, 2, 3, 4], [Infinity, NaN, undefined, null, 1]];
+            var values = [[0, 1, 2, 3, 4], [Infinity, NaN, void(0), null, 1]];
 
             mockCopy.layout.width = 320;
             for(i = 0; i < values.length; i++) {
@@ -353,6 +353,35 @@ describe('parcoords', function() {
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(2);
                 expect(gd.data[0].dimensions[0].values.length).toEqual(values[0].length);
+                done();
+            });
+        });
+
+        it('Non-finite `range` elements', function(done) {
+
+            var mockCopy = Lib.extendDeep({}, mock2);
+            var dim, i, j;
+
+            mockCopy.layout.width = 320;
+            mockCopy.data[0].dimensions[0].range = [-Infinity, 1];
+            mockCopy.data[0].dimensions[1].range = [void(0), 2];
+            mockCopy.data[0].dimensions[0].constraintrange = [NaN, 0.5];
+            mockCopy.data[0].dimensions[1].constraintrange = [null, 0.3];
+
+            for(i = 0; i < mockCopy.data[0].dimensions.length; i++) {
+                dim = mockCopy.data[0].dimensions[i];
+                dim.values = [];
+                for(j = 0; j < 100; j++) {
+                    dim.values[j] = Math.random();
+                }
+            }
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(gd.data[0].dimensions[0].values.length).toEqual(100);
                 done();
             });
         });

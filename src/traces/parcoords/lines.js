@@ -147,7 +147,7 @@ function makeAttributes(sampleCount, points) {
     return attributes;
 }
 
-module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions, unitToColor, context) {
+module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDimensions, unitToColor, context) {
 
     var renderState = {
         currentRafs: {},
@@ -155,10 +155,10 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
         clearOnly: false
     };
 
-    var initialDims = dimensions.slice();
+    var initialDims = initialDimensions.slice();
 
-    var dimensionCount = dimensions.length;
-    var sampleCount = dimensions.reduce(function(p, n) {return Math.min(p, n.values.length);}, dimensions[0].values.length);
+    var dimensionCount = initialDims.length;
+    var sampleCount = initialDims.reduce(function(p, n) {return Math.min(p, n.values.length);}, initialDims[0].values.length);
 
     var focusAlphaBlending = context || lines.focusalphablending;
 
@@ -169,7 +169,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
 
     var panelCount = dimensionCount - 1;
 
-    var points = makePoints(sampleCount, dimensionCount, dimensions, color);
+    var points = makePoints(sampleCount, dimensionCount, initialDims, color);
     var attributes = makeAttributes(sampleCount, points);
 
     var regl = createREGL({

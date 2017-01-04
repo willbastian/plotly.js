@@ -330,6 +330,33 @@ describe('parcoords', function() {
             });
         });
 
+        it('Works with non-finite `values` elements', function(done) {
+
+            var mockCopy = Lib.extendDeep({}, mock2);
+            var dim, i, j;
+            var values = [[0, 1, 2, 3, 4], [Infinity, NaN, undefined, null, 1]];
+
+            mockCopy.layout.width = 320;
+            for(i = 0; i < values.length; i++) {
+                dim = mockCopy.data[0].dimensions[i];
+                delete dim.range;
+                delete dim.constraintrange;
+                dim.values = [];
+                for(j = 0; j < values[0].length; j++) {
+                    dim.values[j] = values[i][j];
+                }
+            }
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(gd.data[0].dimensions[0].values.length).toEqual(values[0].length);
+                done();
+            });
+        });
+
         it('Works with 63 dimensions; also, use default color', function(done) {
 
             var mockCopy = Lib.extendDeep({}, mock1);

@@ -41,6 +41,14 @@ function dimensionExtent(dimension) {
     var lo = dimension.range ? dimension.range[0] : d3.min(dimension.values);
     var hi = dimension.range ? dimension.range[1] : d3.max(dimension.values);
 
+    if(isNaN(lo) || !isFinite(lo)) {
+        lo = 0;
+    }
+
+    if(isNaN(hi) || !isFinite(hi)) {
+        hi = 0;
+    }
+
     // avoid a degenerate (zero-width) domain
     if(lo === hi) {
         if(lo === void(0)) {

@@ -155,6 +155,8 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
         clearOnly: false
     };
 
+    var initialDims = dimensions.slice();
+
     var dimensionCount = dimensions.length;
     var sampleCount = dimensions.reduce(function(p, n) {return Math.min(p, n.values.length);}, dimensions[0].values.length);
 
@@ -282,11 +284,6 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
             return i + offset < dimensions.length;
         }
 
-        function orig(i) {
-            var index = dimensions.map(function(v) {return v.originalXIndex;}).indexOf(i);
-            return dimensions[index];
-        }
-
         var leftmost, rightmost, lowestX = Infinity, highestX = -Infinity;
         for(I = 0; I < panelCount; I++) {
             if(dimensions[I].canvasX > highestX) {
@@ -311,7 +308,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
                 for(abcd = 0; abcd < 4; abcd++) {
                     for(d = 0; d < 16; d++) {
                         dims[loHi][abcd][d] = d + 16 * abcd === index ? 1 : 0;
-                        lims[loHi][abcd][d] = (!context && valid(d, 16 * abcd) ? orig(d + 16 * abcd).filter[loHi] : loHi) + (2 * loHi - 1) * filterEpsilon;
+                        lims[loHi][abcd][d] = (!context && valid(d, 16 * abcd) ? initialDims[d + 16 * abcd].filter[loHi] : loHi) + (2 * loHi - 1) * filterEpsilon;
                     }
                 }
             }

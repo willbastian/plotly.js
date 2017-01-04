@@ -19,6 +19,10 @@ function colorScale(trace) {
     }
 }
 
+function finite(x) {
+    return isNaN(x) || !isFinite(x) ? 0 : x;
+}
+
 module.exports = function calc(gd, trace) {
     var vals = trace.dimensions,
         cd = [],
@@ -33,8 +37,8 @@ module.exports = function calc(gd, trace) {
         cd.push({
             v: v,
             i: i,
-            range: vals[i].range,
-            constraintrange: vals[i].constraintrange,
+            range: vals[i].range && vals[i].range.map(finite),
+            constraintrange: vals[i].constraintrange && vals[i].constraintrange.map(finite),
             tickvals: vals[i].tickvals,
             ticktext: vals[i].ticktext,
             visible: vals[i].visible,

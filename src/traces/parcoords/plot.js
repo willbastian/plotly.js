@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -25,13 +25,14 @@ module.exports = function plot(gd, cdparcoords) {
         var range = value.changedDimension.domainFilter;
         var modelIndex = value.changedDimension.modelIndex;
         var i = value.changedDimension.index;
+        var newData;
 
         if(restyleStyle === 'deepProp') {
-            Plotly.restyle(gd, 'dimensions[' + i + '].constraintrange[0]', range[0]).then(function () {
+            Plotly.restyle(gd, 'dimensions[' + i + '].constraintrange[0]', range[0]).then(function() {
                 Plotly.restyle(gd, 'dimensions[' + i + '].constraintrange[1]', range[1]);
             });
         } else if(restyleStyle === 'object') {
-            var newData = Lib.extendDeep(gd.data)[modelIndex];
+            newData = Lib.extendDeep(gd.data)[modelIndex];
             newData.dimensions[i].constraintrange = range.slice();
             Plotly.restyle(gd, [[newData]], modelIndex);
         } else if(restyleStyle === 'replot') {

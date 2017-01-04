@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -379,7 +379,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         .each(function(d) {
             var wantedTickCount = d.model.height / d.model.tickDistance;
             var scale = d.domainScale;
-            var dom = scale.domain();
+            var sdom = scale.domain();
             var texts = d.ticktext;
             d3.select(this)
                 .call(d3.svg.axis()
@@ -388,9 +388,8 @@ module.exports = function(root, styledData, layout, callbacks) {
                     .outerTickSize(2)
                     .ticks(wantedTickCount, '3s') // works for continuous scales only...
                     .tickValues(d.ordinal ? // and this works for ordinal scales
-                        dom
-                            .filter(function(d, i) {return !(i % Math.round((dom.length / wantedTickCount)));})
-                            .map(function(d, i) {return texts && texts[i] || d}):
+                        sdom.filter(function(d, i) {return !(i % Math.round((sdom.length / wantedTickCount)));})
+                            .map(function(d, i) {return texts && texts[i] || d;}) :
                         null)
                     .scale(scale));
         });

@@ -238,6 +238,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(document.querySelectorAll('.axis').length).toEqual(2);
                 expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
                 expect(gd.data[0].dimensions[0].range).not.toBeDefined();
                 expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
@@ -258,6 +259,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(1);
+                expect(document.querySelectorAll('.axis').length).toEqual(1); // sole axis still shows up
                 expect(gd.data[0].line.cmin).toEqual(-4000);
                 expect(gd.data[0].blocklinecount).toEqual(5000);
                 expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
@@ -277,6 +279,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(0);
+                expect(document.querySelectorAll('.axis').length).toEqual(0);
                 done();
             });
         });
@@ -302,6 +305,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(document.querySelectorAll('.axis').length).toEqual(2);
                 expect(gd.data[0].dimensions[0].values.length).toEqual(1);
                 done();
             });
@@ -325,6 +329,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(document.querySelectorAll('.axis').length).toEqual(2);
                 expect(gd.data[0].dimensions[0].values.length).toEqual(0);
                 done();
             });
@@ -352,6 +357,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(document.querySelectorAll('.axis').length).toEqual(2);
                 expect(gd.data[0].dimensions[0].values.length).toEqual(values[0].length);
                 done();
             });
@@ -381,6 +387,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(document.querySelectorAll('.axis').length).toEqual(2);
                 expect(gd.data[0].dimensions[0].values.length).toEqual(100);
                 done();
             });
@@ -412,6 +419,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(63);
+                expect(document.querySelectorAll('.axis').length).toEqual(63);
                 done();
             });
         });
@@ -439,6 +447,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(63);
+                expect(document.querySelectorAll('.axis').length).toEqual(63);
                 done();
             });
         });
@@ -467,6 +476,41 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(63);
+                expect(document.querySelectorAll('.axis').length).toEqual(63);
+                done();
+            });
+        });
+
+        it('Skip dimensions which are not plain objects or whose `values` is not an array', function(done) {
+
+            var mockCopy = Lib.extendDeep({}, mock1);
+            var newDimension, i, j;
+
+            mockCopy.layout.width = 680;
+            mockCopy.data[0].dimensions = [];
+            delete mockCopy.data[0].line;
+            for(i = 0; i < 5; i++) {
+                newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
+                newDimension.id = 'S' + i;
+                newDimension.label = 'S' + i;
+                delete newDimension.constraintrange;
+                newDimension.range = [1, 2];
+                newDimension.values = [];
+                for(j = 0; j < 100; j++) {
+                    newDimension.values[j] = 1 + Math.random();
+                }
+                mockCopy.data[0].dimensions[i] = newDimension;
+            }
+
+            mockCopy.data[0].dimensions[0] = 'This is not a plain object';
+            mockCopy.data[0].dimensions[1].values = 'This is not an array';
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(5); // it's still five, but ...
+                expect(document.querySelectorAll('.axis').length).toEqual(3); // only 3 axes shown
                 done();
             });
         });
@@ -488,6 +532,7 @@ describe('parcoords', function() {
 
             expect(gd.data.length).toEqual(1);
             expect(gd.data[0].dimensions.length).toEqual(11);
+            expect(document.querySelectorAll('.axis').length).toEqual(10); // one dimension is `visible: false`
             expect(gd.data[0].line.cmin).toEqual(-4000);
             expect(gd.data[0].blocklinecount).toEqual(5000);
             expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
@@ -506,6 +551,8 @@ describe('parcoords', function() {
 
             var reversedMockCopy = Lib.extendDeep({}, mockCopy);
             reversedMockCopy.data[0].dimensions = reversedMockCopy.data[0].dimensions.slice().reverse();
+            reversedMockCopy.data[0].dimensions.forEach(function(d) {d.id = 'R_' + d.id;});
+            reversedMockCopy.data[0].dimensions.forEach(function(d) {d.label = 'R_' + d.label;});
 
             Plotly.plot(gd, reversedMockCopy.data, reversedMockCopy.layout).then(function() {
 
@@ -522,6 +569,8 @@ describe('parcoords', function() {
                 expect(gd.data[1].dimensions[10].constraintrange).toBeDefined();
                 expect(gd.data[1].dimensions[10].constraintrange).toEqual([100000, 150000]);
                 expect(gd.data[1].dimensions[1].constraintrange).not.toBeDefined();
+
+                expect(document.querySelectorAll('.axis').length).toEqual(10);  // one dimension is `visible: false`
 
                 done();
             });

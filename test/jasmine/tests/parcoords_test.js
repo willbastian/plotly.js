@@ -224,257 +224,290 @@ var mock = {
     }]
 };
 
-describe('parcoords edge cases', function() {
+describe('parcoords', function() {
 
-    //afterEach(destroyGraphDiv);
+    afterEach(destroyGraphDiv);
 
-    it('Works fine with one panel only', function(done) {
+    describe('edge cases', function () {
 
-        var mockCopy = Lib.extendDeep({}, mock2);
-        var gd = createGraphDiv();
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+        it('Works fine with one panel only', function (done) {
+
+            var mockCopy = Lib.extendDeep({}, mock2);
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
+                expect(gd.data[0].dimensions[0].range).not.toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toEqual([200, 700]);
+                expect(gd.data[0].dimensions[1].range).toBeDefined();
+                expect(gd.data[0].dimensions[1].range).toEqual([0, 700000]);
+                expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+                done();
+            });
+        });
+
+        it('Do something sensible if there is no panel i.e. dimension count is less than 2', function (done) {
+
+            var mockCopy = Lib.extendDeep({}, mock1);
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(1);
+                expect(gd.data[0].line.cmin).toEqual(-4000);
+                expect(gd.data[0].blocklinecount).toEqual(5000);
+                expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
+                expect(gd.data[0].dimensions[0].range).not.toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toEqual([200, 700]);
+
+                done();
+            });
+        });
+
+        it('Does not error with zero dimensions', function (done) {
+
+            var mockCopy = Lib.extendDeep({}, mock0);
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(0);
+                done();
+            });
+        });
+
+        it('Works with 63 dimensions; also, use default color', function (done) {
+
+            var mockCopy = Lib.extendDeep({}, mock1);
+            var newDimension, i, j;
+
+            mockCopy.layout.width = 1680;
+            mockCopy.data[0].dimensions = [];
+            delete mockCopy.data[0].line;
+            for (i = 0; i < 63; i++) {
+                newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
+                newDimension.id = "S" + i;
+                newDimension.label = "S" + i;
+                delete newDimension.constraintrange;
+                newDimension.range = [1, 2];
+                newDimension.values = [];
+                for (j = 0; j < 100; j++) {
+                    newDimension.values[j] = 1 + Math.random();
+                }
+                mockCopy.data[0].dimensions[i] = newDimension;
+            }
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(63);
+                done();
+            });
+        });
+
+        it('Truncates 63+ dimensions to 63', function (done) {
+
+            var mockCopy = Lib.extendDeep({}, mock1);
+            var newDimension, i, j;
+
+            mockCopy.layout.width = 1680;
+            for (i = 0; i < 70; i++) {
+                newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
+                newDimension.id = "S" + i;
+                newDimension.label = "S" + i;
+                delete newDimension.constraintrange;
+                newDimension.range = [0, 999];
+                for (j = 0; j < 10; j++) {
+                    newDimension.values[j] = Math.floor(1000 * Math.random());
+                }
+                mockCopy.data[0].dimensions[i] = newDimension;
+            }
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(63);
+                done();
+            });
+        });
+
+        it('Truncates dimension values to the shortest array, retaining only 3 lines', function (done) {
+
+            var mockCopy = Lib.extendDeep({}, mock1);
+            var newDimension, i, j;
+
+            mockCopy.layout.width = 1680;
+            for (i = 0; i < 63; i++) {
+                newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
+                newDimension.id = "S" + i;
+                newDimension.label = "S" + i;
+                delete newDimension.constraintrange;
+                newDimension.range = [0, 999];
+                newDimension.values = [];
+                for (j = 0; j < 65 - i; j++) {
+                    newDimension.values[j] = Math.floor(1000 * Math.random());
+                }
+                mockCopy.data[0].dimensions[i] = newDimension;
+            }
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(63);
+                done();
+            });
+        });
+
+
+    });
+
+    describe('basic use', function () {
+        var mockCopy,
+            gd;
+
+        beforeEach(function (done) {
+            mockCopy = Lib.extendDeep({}, mock);
+            gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
+        });
+
+        it('`Plotly.plot` should have proper fields on `gd.data` on initial rendering', function () {
 
             expect(gd.data.length).toEqual(1);
-            expect(gd.data[0].dimensions.length).toEqual(2);
+            expect(gd.data[0].dimensions.length).toEqual(11);
+            expect(gd.data[0].line.cmin).toEqual(-4000);
+            expect(gd.data[0].blocklinecount).toEqual(5000);
             expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
+            expect(gd.data[0].dimensions[4].visible).toEqual(true);
+            expect(gd.data[0].dimensions[5].visible).toEqual(false);
             expect(gd.data[0].dimensions[0].range).not.toBeDefined();
             expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([200, 700]);
+            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
             expect(gd.data[0].dimensions[1].range).toBeDefined();
             expect(gd.data[0].dimensions[1].range).toEqual([0, 700000]);
             expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
 
-            done();
-        });
-    });
-
-    it('Do something sensible if there is no panel i.e. dimension count is less than 2', function(done) {
-
-        var mockCopy = Lib.extendDeep({}, mock1);
-        var gd = createGraphDiv();
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
-
-            expect(gd.data.length).toEqual(1);
-            expect(gd.data[0].dimensions.length).toEqual(1);
-            expect(gd.data[0].line.cmin).toEqual(-4000);
-            expect(gd.data[0].blocklinecount).toEqual(5000);
-            expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
-            expect(gd.data[0].dimensions[0].range).not.toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([200, 700]);
-
-            done();
-        });
-    });
-
-    it('Does not error with zero dimensions', function(done) {
-
-        var mockCopy = Lib.extendDeep({}, mock0);
-        var gd = createGraphDiv();
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
-
-            expect(gd.data.length).toEqual(1);
-            expect(gd.data[0].dimensions.length).toEqual(0);
-            done();
-        });
-    });
-
-    it('Works with 63 dimensions', function(done) {
-
-        var mockCopy = Lib.extendDeep({}, mock1);
-        var newDimension, i, j;
-
-        mockCopy.layout.width = 1680;
-        for(i = 0; i < 63; i++) {
-            newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
-            newDimension.id = "S" + i;
-            newDimension.label = "S" + i;
-            delete newDimension.constraintrange;
-            newDimension.range = [0, 999];
-            for(j = 0; j < 100; j++) {
-                newDimension.values[j] = Math.floor(1000 * Math.random());
-            }
-            mockCopy.data[0].dimensions[i] = newDimension;
-        }
-
-        var gd = createGraphDiv();
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
-
-            expect(gd.data.length).toEqual(1);
-            expect(gd.data[0].dimensions.length).toEqual(63);
-            done();
-        });
-    });
-
-    fit('Truncates 63+ dimensions to 63', function(done) {
-
-        var mockCopy = Lib.extendDeep({}, mock1);
-        var newDimension, i, j;
-
-        mockCopy.layout.width = 1680;
-        for(i = 0; i < 70; i++) {
-            newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
-            newDimension.id = "S" + i;
-            newDimension.label = "S" + i;
-            delete newDimension.constraintrange;
-            newDimension.range = [0, 999];
-            for(j = 0; j < 100; j++) {
-                newDimension.values[j] = Math.floor(1000 * Math.random());
-            }
-            mockCopy.data[0].dimensions[i] = newDimension;
-        }
-
-        var gd = createGraphDiv();
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
-
-            expect(gd.data.length).toEqual(1);
-            expect(gd.data[0].dimensions.length).toEqual(63);
-            done();
-        });
-    });
-
-});
-
-describe('parcoords basic use', function() {
-    var mockCopy,
-        gd;
-
-    beforeEach(function(done) {
-        mockCopy = Lib.extendDeep({}, mock);
-        gd = createGraphDiv();
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
-    });
-
-    afterEach(destroyGraphDiv);
-
-    it('`Plotly.plot` should have proper fields on `gd.data` on initial rendering', function() {
-
-        expect(gd.data.length).toEqual(1);
-        expect(gd.data[0].dimensions.length).toEqual(11);
-        expect(gd.data[0].line.cmin).toEqual(-4000);
-        expect(gd.data[0].blocklinecount).toEqual(5000);
-        expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
-        expect(gd.data[0].dimensions[4].visible).toEqual(true);
-        expect(gd.data[0].dimensions[5].visible).toEqual(false);
-        expect(gd.data[0].dimensions[0].range).not.toBeDefined();
-        expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-        expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
-        expect(gd.data[0].dimensions[1].range).toBeDefined();
-        expect(gd.data[0].dimensions[1].range).toEqual([0, 700000]);
-        expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
-
-    });
-
-    it('Calling `Plotly.plot` again should add the new parcoords', function(done) {
-
-        var reversedMockCopy = Lib.extendDeep({}, mockCopy);
-        reversedMockCopy.data[0].dimensions = reversedMockCopy.data[0].dimensions.slice().reverse();
-
-        Plotly.plot(gd, reversedMockCopy.data, reversedMockCopy.layout).then(function() {
-
-            expect(gd.data.length).toEqual(2);
-
-            expect(gd.data[0].dimensions.length).toEqual(11);
-            expect(gd.data[0].line.cmin).toEqual(-4000);
-            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
-            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
-
-            expect(gd.data[1].dimensions.length).toEqual(11);
-            expect(gd.data[1].line.cmin).toEqual(-4000);
-            expect(gd.data[1].dimensions[10].constraintrange).toBeDefined();
-            expect(gd.data[1].dimensions[10].constraintrange).toEqual([100000, 150000]);
-            expect(gd.data[1].dimensions[1].constraintrange).not.toBeDefined();
-
-            done();
         });
 
-    });
+        it('Calling `Plotly.plot` again should add the new parcoords', function (done) {
 
-    it('Calling `Plotly.restyle` should amend the preexisting parcoords', function(done) {
+            var reversedMockCopy = Lib.extendDeep({}, mockCopy);
+            reversedMockCopy.data[0].dimensions = reversedMockCopy.data[0].dimensions.slice().reverse();
 
-        expect(gd.data.length).toEqual(1);
+            Plotly.plot(gd, reversedMockCopy.data, reversedMockCopy.layout).then(function () {
 
-        Plotly.restyle(gd, 'line.colorscale', 'Viridis').then(function() {
+                expect(gd.data.length).toEqual(2);
+
+                expect(gd.data[0].dimensions.length).toEqual(11);
+                expect(gd.data[0].line.cmin).toEqual(-4000);
+                expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+                expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+                expect(gd.data[1].dimensions.length).toEqual(11);
+                expect(gd.data[1].line.cmin).toEqual(-4000);
+                expect(gd.data[1].dimensions[10].constraintrange).toBeDefined();
+                expect(gd.data[1].dimensions[10].constraintrange).toEqual([100000, 150000]);
+                expect(gd.data[1].dimensions[1].constraintrange).not.toBeDefined();
+
+                done();
+            });
+
+        });
+
+        it('Calling `Plotly.restyle` should amend the preexisting parcoords', function (done) {
 
             expect(gd.data.length).toEqual(1);
 
-            expect(gd.data[0].line.colorscale).toEqual('Viridis');
-            expect(gd.data[0].dimensions.length).toEqual(11);
-            expect(gd.data[0].line.cmin).toEqual(-4000);
-            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
-            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+            Plotly.restyle(gd, 'line.colorscale', 'Viridis').then(function () {
 
-            done();
+                expect(gd.data.length).toEqual(1);
+
+                expect(gd.data[0].line.colorscale).toEqual('Viridis');
+                expect(gd.data[0].dimensions.length).toEqual(11);
+                expect(gd.data[0].line.cmin).toEqual(-4000);
+                expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+                expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+                done();
+            });
+
+        });
+
+        it('Calling `Plotly.restyle` should amend the preexisting parcoords', function (done) {
+
+            var newStyle = Lib.extendDeep({}, mockCopy.data[0].line);
+            newStyle.colorscale = 'Viridis';
+            newStyle.reversescale = false;
+
+            Plotly.restyle(gd, {line: newStyle}).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+
+                expect(gd.data[0].line.colorscale).toEqual('Viridis');
+                expect(gd.data[0].line.reversescale).toEqual(false);
+                expect(gd.data[0].dimensions.length).toEqual(11);
+                expect(gd.data[0].line.cmin).toEqual(-4000);
+                expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+                expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+                done();
+            });
+
+
+        });
+
+        it('Calling `Plotly.relayout` with string should amend the preexisting parcoords', function (done) {
+
+            expect(gd.layout.width).toEqual(1184);
+
+            Plotly.relayout(gd, 'width', 500).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+
+                expect(gd.layout.width).toEqual(500);
+                expect(gd.data[0].line.colorscale).toEqual('Jet');
+                expect(gd.data[0].dimensions.length).toEqual(11);
+                expect(gd.data[0].line.cmin).toEqual(-4000);
+                expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+                expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+                done();
+            });
+
+        });
+
+        it('Calling `Plotly.relayout`with object should amend the preexisting parcoords', function (done) {
+
+            expect(gd.layout.width).toEqual(1184);
+
+            Plotly.relayout(gd, {width: 500}).then(function () {
+
+                expect(gd.data.length).toEqual(1);
+
+                expect(gd.layout.width).toEqual(500);
+                expect(gd.data[0].line.colorscale).toEqual('Jet');
+                expect(gd.data[0].dimensions.length).toEqual(11);
+                expect(gd.data[0].line.cmin).toEqual(-4000);
+                expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
+                expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
+                expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
+
+                done();
+            });
+
         });
 
     });
-
-    it('Calling `Plotly.restyle` should amend the preexisting parcoords', function(done) {
-
-        var newStyle = Lib.extendDeep({}, mockCopy.data[0].line);
-        newStyle.colorscale = 'Viridis';
-        newStyle.reversescale = false;
-
-        Plotly.restyle(gd, {line: newStyle}).then(function() {
-
-            expect(gd.data.length).toEqual(1);
-
-            expect(gd.data[0].line.colorscale).toEqual('Viridis');
-            expect(gd.data[0].line.reversescale).toEqual(false);
-            expect(gd.data[0].dimensions.length).toEqual(11);
-            expect(gd.data[0].line.cmin).toEqual(-4000);
-            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
-            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
-
-            done();
-        });
-
-
-    });
-
-    it('Calling `Plotly.relayout` with string should amend the preexisting parcoords', function(done) {
-
-        expect(gd.layout.width).toEqual(1184);
-
-        Plotly.relayout(gd, 'width', 500).then(function() {
-
-            expect(gd.data.length).toEqual(1);
-
-            expect(gd.layout.width).toEqual(500);
-            expect(gd.data[0].line.colorscale).toEqual('Jet');
-            expect(gd.data[0].dimensions.length).toEqual(11);
-            expect(gd.data[0].line.cmin).toEqual(-4000);
-            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
-            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
-
-            done();
-        });
-
-    });
-
-    it('Calling `Plotly.relayout`with object should amend the preexisting parcoords', function(done) {
-
-        expect(gd.layout.width).toEqual(1184);
-
-        Plotly.relayout(gd, {width: 500}).then(function() {
-
-            expect(gd.data.length).toEqual(1);
-
-            expect(gd.layout.width).toEqual(500);
-            expect(gd.data[0].line.colorscale).toEqual('Jet');
-            expect(gd.data[0].dimensions.length).toEqual(11);
-            expect(gd.data[0].line.cmin).toEqual(-4000);
-            expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
-            expect(gd.data[0].dimensions[0].constraintrange).toEqual([100000, 150000]);
-            expect(gd.data[0].dimensions[1].constraintrange).not.toBeDefined();
-
-            done();
-        });
-
-    });
-
 });

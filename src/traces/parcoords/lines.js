@@ -156,7 +156,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, dimensions
     };
 
     var dimensionCount = dimensions.length;
-    var sampleCount = dimensions[0].values.length;
+    var sampleCount = dimensions.reduce(function(p, n) {return Math.min(p, n.values.length);}, dimensions[0].values.length);
 
     var focusAlphaBlending = context || lines.focusalphablending;
 

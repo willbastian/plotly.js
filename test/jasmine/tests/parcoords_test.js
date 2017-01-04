@@ -281,6 +281,55 @@ describe('parcoords', function() {
             });
         });
 
+        it('Works with a single line; also, use a longer color array than the number of lines', function(done) {
+
+            var mockCopy = Lib.extendDeep({}, mock2);
+            var dim, i, j;
+
+            mockCopy.layout.width = 320;
+            for(i = 0; i < mockCopy.data[0].dimensions.length; i++) {
+                dim = mockCopy.data[0].dimensions[i];
+                delete dim.constraintrange;
+                dim.range = [1, 2];
+                dim.values = [];
+                for(j = 0; j < 1; j++) {
+                    dim.values[j] = 1 + Math.random();
+                }
+            }
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(gd.data[0].dimensions[0].values.length).toEqual(1);
+                done();
+            });
+        });
+
+        it('Does not raise an error with zero lines and no specified range', function(done) {
+
+            var mockCopy = Lib.extendDeep({}, mock2);
+            var dim, i;
+
+            mockCopy.layout.width = 320;
+            for(i = 0; i < mockCopy.data[0].dimensions.length; i++) {
+                dim = mockCopy.data[0].dimensions[i];
+                delete dim.range;
+                delete dim.constraintrange;
+                dim.values = [];
+            }
+
+            var gd = createGraphDiv();
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+
+                expect(gd.data.length).toEqual(1);
+                expect(gd.data[0].dimensions.length).toEqual(2);
+                expect(gd.data[0].dimensions[0].values.length).toEqual(0);
+                done();
+            });
+        });
+
         it('Works with 63 dimensions; also, use default color', function(done) {
 
             var mockCopy = Lib.extendDeep({}, mock1);

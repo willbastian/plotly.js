@@ -43,7 +43,10 @@ function dimensionExtent(dimension) {
 
     // avoid a degenerate (zero-width) domain
     if(lo === hi) {
-        if(lo === 0) {
+        if(lo === void(0)) {
+            lo = 0;
+            hi = 1;
+        } else if(lo === 0) {
             // no use to multiplying zero, so add/subtract in this case
             lo -= 1;
             hi += 1;

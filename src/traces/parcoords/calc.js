@@ -13,7 +13,6 @@ var calcColorscale = require('../../components/colorscale/calc');
 var isNumeric = require('fast-isnumeric');
 var d3 = require('d3');
 
-// todo consider unifying common parts with e.g. `scatter`
 function colorScale(trace) {
     if(hasColorscale(trace, 'line')) {
         calcColorscale(trace, trace.line.color, 'line', 'c');
@@ -44,11 +43,20 @@ module.exports = function calc(gd, trace) {
         });
     }
 
-    // todo should it be in defaults.js?
     colorScale(trace, trace.line.color, 'line', 'c');
 
-    var colorStops = trace.line.colorscale.map(function(d) {return d[0];});
-    var colorStrings = trace.line.colorscale.map(function(d) {return d[1];});
+    var cs = !!trace.line.colorscale;
+
+    var cscale = cs ? trace.line.colorscale : [[0, trace.line.color], [1, trace.line.color]];
+    var cmin = trace.line.cmin === void(0) ? 0 : trace.line.cmin;
+    var cmax = trace.line.cmax === void(0) ? 1 : trace.line.cmax;
+    var color = cs ? trace.line.color : Array.apply(0, Array(trace.dimensions.reduce(function(p, n) {return Math.max(p, n.values.length);}, 0))).map(function() {return 0.5;});
+
+    trace.line.color = color;
+    trace.line.colorscale = cscale;
+
+    var colorStops = cscale.map(function(d) {return d[0];});
+    var colorStrings = cscale.map(function(d) {return d[1];});
     var colorTuples = colorStrings.map(function(c) {return d3.rgb(c);});
     var prop = function(n) {return function(o) {return o[n];};};
 
@@ -62,10 +70,10 @@ module.exports = function calc(gd, trace) {
     });
 
     var colorToUnitScale = d3.scale.linear()
-        .domain(d3.extent(trace.line.color));
+        .domain(d3.extent(color));
 
-    var unitMin = colorToUnitScale(trace.line.cmin);
-    var unitMax = colorToUnitScale(trace.line.cmax);
+    var unitMin = colorToUnitScale(cmin);
+    var unitMax = colorToUnitScale(cmax);
 
     var cScale = d3.scale.linear()
         .clamp(true)

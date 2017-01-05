@@ -48,6 +48,9 @@
     "version": "npm run build && git add -A dist src build",
     "postversion": "node -e \"console.log('Version bumped and committed. If ok, run: git push && git push --tags')\""
   },
+  "browserify": {
+    "transform": ["glslify"]
+  },
   "dependencies": {
     "3d-view": "^2.0.0",
     "alpha-shape": "^1.0.0",

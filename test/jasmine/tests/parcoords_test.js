@@ -7,8 +7,7 @@ var destroyGraphDiv = require('../assets/destroy_graph_div');
 var mock0 = { // mock with zero dimensions; special case, as no dimension can be rendered
     'layout': {
         'width': 2184,
-        'height': 400,
-        'paper_bgcolor': 'rgb(250, 240, 220)'
+        'height': 400
     },
     'data': [{
 

@@ -154,7 +154,7 @@ function model(layout, d, i) {
     var height = layoutHeight - 2 * padding;
 
     return {
-        key: d.id || ('gensym' + i),
+        key: 'gensym' + i,
         dimensions: d.dimensions,
         tickDistance: d.tickdistance,
         unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
@@ -246,10 +246,12 @@ module.exports = function(root, styledData, layout, callbacks) {
         filterBarPattern.enter()
             .append('pattern')
             .attr('id', 'filterBarPattern')
-            .attr('width', filterBar.capturewidth)
-            .attr('height', function(d) {return d.model.height;})
             .attr('x', -filterBar.width)
             .attr('patternUnits', 'userSpaceOnUse');
+
+        filterBarPattern
+            .attr('width', filterBar.capturewidth)
+            .attr('height', function(d) {return d.model.height;});
 
         var filterBarPatternGlyph = filterBarPattern.selectAll('rect')
             .data(repeat, keyFun);

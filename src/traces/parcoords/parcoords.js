@@ -103,11 +103,44 @@ function ordinalScale(dimension) {
             .range(dimension.tickvals.map(function(d) {return (d - extent[0]) / (extent[1] - extent[0]);}));
 }
 
+function unitToColorScale(cscale, cmin, cmax, coloringArray) {
+
+    var colorStops = cscale.map(function(d) {return d[0];});
+    var colorStrings = cscale.map(function(d) {return d[1];});
+    var colorTuples = colorStrings.map(function(c) {return d3.rgb(c);});
+    var prop = function(n) {return function(o) {return o[n];};};
+
+    // We can't use d3 color interpolation as we may have non-uniform color palette raster
+    // (various color stop distances).
+    var polylinearUnitScales = 'rgb'.split('').map(function(key) {
+        return d3.scale.linear()
+            .clamp(true)
+            .domain(colorStops)
+            .range(colorTuples.map(prop(key)));
+    });
+
+    var colorToUnitScale = d3.scale.linear()
+        .domain(d3.extent(coloringArray));
+
+    var unitMin = colorToUnitScale(cmin);
+    var unitMax = colorToUnitScale(cmax);
+
+    var cScale = d3.scale.linear()
+        .clamp(true)
+        .domain([unitMin, unitMax]);
+
+    return function(d) {
+        return polylinearUnitScales.map(function(s) {
+            return s(cScale(d));
+        });
+    }
+}
+
 function model(layout, d, i) {
 
     var canvasPixelRatio = d.line.pixelratio;
 
-    var lines = Lib.extendDeep(d.line, {
+    var lines = Lib.extendDeep({}, d.line, {
         color: d.line.color.map(domainToUnitScale({values: d.line.color})),
         blockLineCount: d.blocklinecount,
         canvasOverdrag: overdrag * canvasPixelRatio
@@ -124,7 +157,7 @@ function model(layout, d, i) {
         key: d.id || ('gensym' + i),
         dimensions: d.dimensions,
         tickDistance: d.tickdistance,
-        unitToColor: d.unitToColor,
+        unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
         lines: lines,
         translateX: (d.domain.x[0] || 0) * layout.width,
         translateY: (d.domain.y[0] || 0) * layout.height,

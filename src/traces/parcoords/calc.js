@@ -23,6 +23,39 @@ function finite(x) {
     return isNaN(x) || !isFinite(x) ? 0 : x;
 }
 
+function unitToColorScale(cscale, cmin, cmax, coloringArray) {
+
+    var colorStops = cscale.map(function(d) {return d[0];});
+    var colorStrings = cscale.map(function(d) {return d[1];});
+    var colorTuples = colorStrings.map(function(c) {return d3.rgb(c);});
+    var prop = function(n) {return function(o) {return o[n];};};
+
+    // We can't use d3 color interpolation as we may have non-uniform color palette raster
+    // (various color stop distances).
+    var polylinearUnitScales = 'rgb'.split('').map(function(key) {
+        return d3.scale.linear()
+            .clamp(true)
+            .domain(colorStops)
+            .range(colorTuples.map(prop(key)));
+    });
+
+    var colorToUnitScale = d3.scale.linear()
+        .domain(d3.extent(coloringArray));
+
+    var unitMin = colorToUnitScale(cmin);
+    var unitMax = colorToUnitScale(cmax);
+
+    var cScale = d3.scale.linear()
+        .clamp(true)
+        .domain([unitMin, unitMax]);
+
+    return function(d) {
+        return polylinearUnitScales.map(function(s) {
+            return s(cScale(d));
+        });
+    }
+}
+
 module.exports = function calc(gd, trace) {
     var vals = trace.dimensions,
         cd = [],
@@ -59,30 +92,6 @@ module.exports = function calc(gd, trace) {
     trace.line.color = color;
     trace.line.colorscale = cscale;
 
-    var colorStops = cscale.map(function(d) {return d[0];});
-    var colorStrings = cscale.map(function(d) {return d[1];});
-    var colorTuples = colorStrings.map(function(c) {return d3.rgb(c);});
-    var prop = function(n) {return function(o) {return o[n];};};
-
-    // We can't use d3 color interpolation as we may have non-uniform color palette raster
-    // (various color stop distances).
-    var polylinearUnitScales = 'rgb'.split('').map(function(key) {
-        return d3.scale.linear()
-            .clamp(true)
-            .domain(colorStops)
-            .range(colorTuples.map(prop(key)));
-    });
-
-    var colorToUnitScale = d3.scale.linear()
-        .domain(d3.extent(color));
-
-    var unitMin = colorToUnitScale(cmin);
-    var unitMax = colorToUnitScale(cmax);
-
-    var cScale = d3.scale.linear()
-        .clamp(true)
-        .domain([unitMin, unitMax]);
-
     return [{
         id: trace.id,
         domain: trace.domain,
@@ -91,10 +100,12 @@ module.exports = function calc(gd, trace) {
         blocklinecount: trace.blocklinecount,
         line: trace.line,
         padding: trace.padding,
-        unitToColor: function(d) {
-            return polylinearUnitScales.map(function(s) {
-                return s(cScale(d));
-            });
-        }
+/*
+        unitToColorProps: {
+            unitDomain: [unitMin, unitMax],
+            colorStops: colorStops
+        },
+*/
+        unitToColor: unitToColorScale(cscale, cmin, cmax, color)
     }];
 };

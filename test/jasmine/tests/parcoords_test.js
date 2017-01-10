@@ -1,5 +1,6 @@
 var Plotly = require('@lib/index');
 var Lib = require('@src/lib');
+var d3 = require('d3');
 
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
@@ -569,7 +570,7 @@ describe('parcoords', function() {
                 expect(gd.data[1].dimensions[10].constraintrange).toEqual([100000, 150000]);
                 expect(gd.data[1].dimensions[1].constraintrange).not.toBeDefined();
 
-                expect(document.querySelectorAll('.axis').length).toEqual(10);  // one dimension is `visible: false`
+                expect(document.querySelectorAll('.axis').length).toEqual(20);  // one dimension is `visible: false`
 
                 done();
             });
@@ -662,5 +663,159 @@ describe('parcoords', function() {
 
         });
 
+    });
+
+    describe('final test cases to move to plotly', function() {
+
+        afterEach(destroyGraphDiv);
+
+        it('Plotly.deleteTraces with one trace removes the plot', function(done) {
+
+            var gd = createGraphDiv();
+            var mockCopy = Lib.extendDeep({}, mock);
+
+            mockCopy.data[0].line.showscale = false;
+
+            Plotly.plot(gd, mockCopy).then(function() {
+
+                expect(gd.data.length).toEqual(1);
+
+                Plotly.deleteTraces(gd, 0).then(function() {
+                    expect(d3.selectAll('.parcoordsModel').node()).toEqual(null);
+                    expect(gd.data.length).toEqual(0);
+                    done();
+                });
+            });
+        });
+
+        it('Plotly.deleteTraces with two traces removes the deleted plot', function(done) {
+
+            var gd = createGraphDiv();
+            var mockCopy = Lib.extendDeep({}, mock);
+            var mockCopy2 = Lib.extendDeep({}, mock);
+            mockCopy2.data[0].dimensions.splice(3, 4);
+            mockCopy.data[0].line.showscale = false;
+
+            Plotly.plot(gd, mockCopy).then(function() {
+                expect(gd.data.length).toEqual(1);
+                expect(document.querySelectorAll('.panel').length).toEqual(10);
+                Plotly.plot(gd, mockCopy2).then(function() {
+                    expect(gd.data.length).toEqual(2);
+                    expect(document.querySelectorAll('.panel').length).toEqual(10 + 7);
+                    Plotly.deleteTraces(gd, [0]).then(function() {
+                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
+                        expect(document.querySelectorAll('.panel').length).toEqual(7);
+                        expect(gd.data.length).toEqual(1);
+                        Plotly.deleteTraces(gd, 0).then(function() {
+                            expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
+                            expect(document.querySelectorAll('.panel').length).toEqual(0);
+                            expect(gd.data.length).toEqual(0);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('Having two datasets', function() {
+
+            it('Two subsequent calls to Plotly.plot should create two parcoords rows', function(done) {
+
+                var gd = createGraphDiv();
+                var mockCopy = Lib.extendDeep({}, mock);
+                var mockCopy2 = Lib.extendDeep({}, mock);
+                mockCopy2.data[0].dimensions.splice(3, 4);
+
+                expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
+
+                Plotly.plot(gd, mockCopy).then(function() {
+
+                    expect(1).toEqual(1);
+                    expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
+                    expect(gd.data.length).toEqual(1);
+
+                    Plotly.plot(gd, mockCopy2).then(function() {
+
+                        expect(1).toEqual(1);
+                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(2);
+                        expect(gd.data.length).toEqual(2);
+
+                        done();
+                    });
+                });
+            });
+
+            it('Plotly.addTraces should add a new parcoords row', function(done) {
+
+                var gd = createGraphDiv();
+                var mockCopy = Lib.extendDeep({}, mock);
+                var mockCopy2 = Lib.extendDeep({}, mock);
+                mockCopy2.data[0].dimensions.splice(3, 4);
+
+                expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
+
+                Plotly.plot(gd, mockCopy).then(function() {
+
+                    expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
+                    expect(gd.data.length).toEqual(1);
+
+                    Plotly.addTraces(gd, [mockCopy2.data[0]]).then(function() {
+
+                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(2);
+                        expect(gd.data.length).toEqual(2);
+
+                        done();
+                    });
+                });
+
+            });
+
+            it('Plotly.restyle should update the existing parcoords row', function(done) {
+
+                var gd = createGraphDiv();
+                var mockCopy = Lib.extendDeep({}, mock);
+                var mockCopy2 = Lib.extendDeep({}, mock);
+
+                delete mockCopy.data[0].dimensions[0].constraintrange;
+                delete mockCopy2.data[0].dimensions[0].constraintrange;
+
+                // in this example, the brush range doesn't change...
+                mockCopy.data[0].dimensions[2].constraintrange = [0, 2];
+                mockCopy2.data[0].dimensions[2].constraintrange = [0, 2];
+
+                // .. but what's inside the brush does:
+                function numberUpdater(v) {
+                    switch(v) {
+                        case 0.5: return 2.5;
+                        default: return v;
+                    }
+                }
+
+                // shuffle around categorical values
+                mockCopy2.data[0].dimensions[2].ticktext = ['A', 'B', 'Y', 'AB', 'Z'];
+                mockCopy2.data[0].dimensions[2].tickvals = [0, 1, 2, 2.5, 3];
+                mockCopy2.data[0].dimensions[2].values = mockCopy2.data[0].dimensions[2].values.map(numberUpdater);
+
+                // wrap the `dimensions` array
+                mockCopy2.data[0].dimensions = [mockCopy2.data[0].dimensions];
+
+                expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
+
+                Plotly.plot(gd, mockCopy).then(function() {
+
+                    expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
+                    expect(gd.data.length).toEqual(1);
+
+                    Plotly.restyle(gd, mockCopy2.data[0]).then(function() {
+
+                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
+                        expect(gd.data.length).toEqual(1);
+
+                        done();
+                    });
+                });
+
+            });
+        });
     });
 });

@@ -11,7 +11,6 @@
 var hasColorscale = require('../../components/colorscale/has_colorscale');
 var calcColorscale = require('../../components/colorscale/calc');
 var isNumeric = require('fast-isnumeric');
-var d3 = require('d3');
 
 function colorScale(trace) {
     if(hasColorscale(trace, 'line')) {
@@ -51,9 +50,7 @@ module.exports = function calc(gd, trace) {
 
     var cs = !!trace.line.colorscale;
     var cscale = cs ? trace.line.colorscale : [[0, trace.line.color], [1, trace.line.color]];
-    var color = cs ? trace.line.color : Array.apply(0, Array(trace.dimensions.reduce(function(p, n) {
-            return Math.max(p, n.values.length);
-        }, 0))).map(function() {return 0.5;});
+    var color = cs ? trace.line.color : Array.apply(0, Array(trace.dimensions.reduce(function(p, n) {return Math.max(p, n.values.length);}, 0))).map(function() {return 0.5;});
 
     trace.line.color = color;
     trace.line.colorscale = cscale;

@@ -133,7 +133,7 @@ function unitToColorScale(cscale, cmin, cmax, coloringArray) {
         return polylinearUnitScales.map(function(s) {
             return s(cScale(d));
         });
-    }
+    };
 }
 
 function model(layout, d, i) {
@@ -210,7 +210,6 @@ function viewModel(model) {
             domainScale: domainScale(height, verticalPadding, dimension),
             ordinalScale: ordinalScale(dimension),
             domainToUnitScale: domainToUnit,
-            pieChartCheat: dimension.pieChartCheat,
             filter: dimension.constraintrange ? dimension.constraintrange.map(domainToUnit) : [0, 1],
             parent: viewModel,
             model: model

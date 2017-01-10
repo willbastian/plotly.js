@@ -21,12 +21,7 @@ exports.plot = function(gd) {
 };
 
 exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout) {
-    var hadParcoords = (oldFullLayout._has && oldFullLayout._has('parcoords'));
-    var hasParcoords = (newFullLayout._has && newFullLayout._has('parcoords'));
-
-    if(hadParcoords && !hasParcoords) {
-        oldFullLayout._parcoordslayer.selectAll('g.trace').remove();
-    }
+    oldFullLayout._glcontainer.selectAll('.parcoordsModel').remove();
 };
 
 function getCdModule(calcdata, _module) {

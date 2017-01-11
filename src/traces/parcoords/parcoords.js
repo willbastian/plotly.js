@@ -17,6 +17,7 @@ var overdrag = 40;
 var legendWidth = 80;
 var verticalPadding = 2; // otherwise, horizontal lines on top or bottom are of lower width
 var tickDistance = 50;
+var canvasPixelRatio = 1;
 
 var filterBar = {
     width: 4, // Visible width of the filter bar
@@ -138,8 +139,6 @@ function unitToColorScale(cscale, cmin, cmax, coloringArray) {
 }
 
 function model(layout, d, i) {
-
-    var canvasPixelRatio = d.line.pixelratio;
 
     var lines = Lib.extendDeep({}, d.line, {
         color: d.line.color.map(domainToUnitScale({values: d.line.color})),

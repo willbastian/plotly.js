@@ -20,11 +20,9 @@ var mock0 = { // mock with zero dimensions; special case, as no dimension can be
         'padding': 80,
         'blocklinecount': 5000,
         'type': 'parcoords',
-        'tickdistance': 50,
         'line': {
-            'focusopacity': 1,
+            'opacity': 1,
             'contextopacity': 0.0625,
-            'pixelratio': 1,
             'focusalphablending': true,
 
             'showscale': true,
@@ -54,11 +52,9 @@ var mock1 = { // mock with one dimension (zero panel); special case, as no panel
         'padding': 80,
         'blocklinecount': 5000,
         'type': 'parcoords',
-        'tickdistance': 50,
         'line': {
-            'focusopacity': 1,
+            'opacity': 1,
             'contextopacity': 0.0625,
-            'pixelratio': 1,
             'focusalphablending': true,
 
             'showscale': true,
@@ -95,11 +91,9 @@ var mock2 = { // mock with two dimensions (one panel); special case, e.g. left a
         'padding': 80,
         'blocklinecount': 5000,
         'type': 'parcoords',
-        'tickdistance': 50,
         'line': {
-            'focusopacity': 1,
+            'opacity': 1,
             'contextopacity': 0.0625,
-            'pixelratio': 1,
             'focusalphablending': true,
 
             'showscale': true,
@@ -142,11 +136,9 @@ var mock = {
         'padding': 80,
         'blocklinecount': 5000,
         'type': 'parcoords',
-        'tickdistance': 50,
         'line': {
-            'focusopacity': 1,
+            'opacity': 1,
             'contextopacity': 0.0625,
-            'pixelratio': 1,
             'focusalphablending': true,
 
             'showscale': true,

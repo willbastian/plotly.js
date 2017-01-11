@@ -18,7 +18,6 @@ var mock0 = { // mock with zero dimensions; special case, as no dimension can be
         },
 
         'padding': 80,
-        'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,
@@ -48,7 +47,6 @@ var mock1 = { // mock with one dimension (zero panel); special case, as no panel
         },
 
         'padding': 80,
-        'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,
@@ -85,7 +83,6 @@ var mock2 = { // mock with two dimensions (one panel); special case, e.g. left a
         },
 
         'padding': 80,
-        'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,
@@ -128,7 +125,6 @@ var mock = {
         },
 
         'padding': 80,
-        'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,
@@ -245,7 +241,6 @@ describe('parcoords', function() {
                 expect(gd.data[0].dimensions.length).toEqual(1);
                 expect(document.querySelectorAll('.axis').length).toEqual(1); // sole axis still shows up
                 expect(gd.data[0].line.cmin).toEqual(-4000);
-                expect(gd.data[0].blocklinecount).toEqual(5000);
                 expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
                 expect(gd.data[0].dimensions[0].range).not.toBeDefined();
                 expect(gd.data[0].dimensions[0].constraintrange).toBeDefined();
@@ -518,7 +513,6 @@ describe('parcoords', function() {
             expect(gd.data[0].dimensions.length).toEqual(11);
             expect(document.querySelectorAll('.axis').length).toEqual(10); // one dimension is `visible: false`
             expect(gd.data[0].line.cmin).toEqual(-4000);
-            expect(gd.data[0].blocklinecount).toEqual(5000);
             expect(gd.data[0].dimensions[0].visible).not.toBeDefined();
             expect(gd.data[0].dimensions[4].visible).toEqual(true);
             expect(gd.data[0].dimensions[5].visible).toEqual(false);

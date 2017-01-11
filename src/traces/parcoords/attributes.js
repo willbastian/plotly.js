@@ -123,16 +123,5 @@ module.exports = {
                 description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
             }
         }
-    ),
-
-    blocklinecount: {
-        valType: 'number',
-        dflt: 5000,
-        min: 1,
-        role: 'info',
-        description: [
-            'The number of lines rendered in one 16ms rendering frame. Use 2000-5000 on low-end hardware to remain',
-            'responsive, and 10000 .. 100000 on strong hardware for faster rendering.'
-        ].join(' ')
-    }
+    )
 };

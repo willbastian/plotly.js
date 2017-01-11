@@ -24,9 +24,6 @@ module.exports = function colorbar(gd, cd) {
 
     gd._fullLayout._infolayer.selectAll('.' + cbId).remove();
 
-    // TODO unify parcoords, scatter and heatmap colorbar
-    // TODO make Colorbar.draw support multiple colorbar per trace
-
     if((line === undefined) || !line.showscale) {
         Plots.autoMargin(gd, cbId);
         return;

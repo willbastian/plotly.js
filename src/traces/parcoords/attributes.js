@@ -88,14 +88,6 @@ module.exports = {
         description: 'The dimensions (variables) of the parallel coordinates chart. 2..63 dimensions are supported.'
     },
 
-    tickdistance: {
-        valType: 'number',
-        dflt: 50,
-        min: 32,
-        role: 'style',
-        description: 'The desired approximate tick distance (in pixels) between axis ticks on an axis.'
-    },
-
     padding: {
         valType: 'number',
         dflt: 80,

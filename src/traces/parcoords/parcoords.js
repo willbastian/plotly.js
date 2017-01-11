@@ -189,10 +189,15 @@ function viewModel(model) {
         model: model
     };
 
+    var uniqueKeys = {};
+
     viewModel.panels = dimensions.filter(visible).map(function(dimension, i) {
         var domainToUnit = domainToUnitScale(dimension);
+        var foundKey = uniqueKeys[dimension.label];
+        uniqueKeys[dimension.label] = (foundKey ? 0 : foundKey) + 1;
+        var key = dimension.label + (foundKey ? '__' + foundKey : '');
         return {
-            key: dimension.id || dimension.label,
+            key: key,
             label: dimension.label,
             tickvals: dimension.tickvals || false,
             ticktext: dimension.ticktext || false,

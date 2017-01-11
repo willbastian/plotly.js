@@ -16,16 +16,6 @@ var extendFlat = require('../../lib/extend').extendFlat;
 
 module.exports = {
 
-    id: {
-        valType: 'string',
-        dflt: '0',
-        role: 'info',
-        description: [
-            'Identifier of a `parcoords` plot. Invoking `Plotly.plot` with the same `id` overwrites',
-            'the `parcoords`, while specifying a different `id` will add a new row.'
-        ].join(' ')
-    },
-
     domain: {
         x: {
             valType: 'info_array',
@@ -57,11 +47,6 @@ module.exports = {
 
     dimensions: {
         _isLinkedToArray: 'dimension',
-        id: {
-            valType: 'string',
-            role: 'info',
-            description: 'Identifier of a dimension. Must be a unique string across all dimensions.'
-        },
         label: {
             valType: 'string',
             role: 'info',

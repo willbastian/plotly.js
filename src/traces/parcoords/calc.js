@@ -56,7 +56,6 @@ module.exports = function calc(gd, trace) {
     trace.line.colorscale = cscale;
 
     return [{
-        id: trace.id,
         domain: trace.domain,
         dimensions: cd,
         tickdistance: trace.tickdistance,

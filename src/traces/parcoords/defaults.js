@@ -48,7 +48,6 @@ function dimensionsDefaults(traceIn, traceOut) {
             continue;
         }
 
-        coerce('id');
         coerce('label');
         coerce('tickvals');
         coerce('ticktext');
@@ -83,7 +82,6 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     coerce('padding');
     coerce('blocklinecount');
 
-    coerce('id');
     coerce('domain.x');
     coerce('domain.y');
 

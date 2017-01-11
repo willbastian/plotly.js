@@ -185,7 +185,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
         type: 'uint8',
         mag: 'nearest',
         min: 'nearest',
-        data: palette(unitToColor, context, Math.round((context ? lines.contextopacity : lines.focusopacity) * 255))
+        data: palette(unitToColor, context, Math.round((context ? lines.contextopacity : lines.opacity) * 255))
     });
 
     var glAes = regl({

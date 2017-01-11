@@ -123,22 +123,13 @@ module.exports = {
                 description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
             },
 
-            focusopacity: {
+            opacity: {
                 valType: 'number',
                 dflt: 1,
                 min: 0,
                 max: 1,
                 role: 'style',
                 description: 'Opacity of the focus lines, on a scale of 0 (invisible) to 1 (fully opaque).'
-            },
-
-            pixelratio: {
-                valType: 'number',
-                dflt: 1,
-                min: 0.25,
-                max: 4,
-                role: 'style',
-                description: 'Line rendering pixel ratio. A lower value yields faster rendering but blockier lines.'
             },
 
             focusalphablending: {

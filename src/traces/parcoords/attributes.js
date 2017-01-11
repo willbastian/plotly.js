@@ -121,24 +121,6 @@ module.exports = {
                 max: 1,
                 role: 'style',
                 description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
-            },
-
-            opacity: {
-                valType: 'number',
-                dflt: 1,
-                min: 0,
-                max: 1,
-                role: 'style',
-                description: 'Opacity of the focus lines, on a scale of 0 (invisible) to 1 (fully opaque).'
-            },
-
-            focusalphablending: {
-                valType: 'boolean',
-                dflt: false,
-                role: 'style',
-                description: [
-                    'By default, the rendered lines are opaque. Setting it to `true` is necessary if opacity is needed.'
-                ].join(' ')
             }
         }
     ),

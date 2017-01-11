@@ -21,9 +21,7 @@ var mock0 = { // mock with zero dimensions; special case, as no dimension can be
         'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
-            'opacity': 1,
             'contextopacity': 0.0625,
-            'focusalphablending': true,
 
             'showscale': true,
             'reversescale': true,
@@ -53,9 +51,7 @@ var mock1 = { // mock with one dimension (zero panel); special case, as no panel
         'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
-            'opacity': 1,
             'contextopacity': 0.0625,
-            'focusalphablending': true,
 
             'showscale': true,
             'reversescale': true,
@@ -92,9 +88,7 @@ var mock2 = { // mock with two dimensions (one panel); special case, e.g. left a
         'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
-            'opacity': 1,
             'contextopacity': 0.0625,
-            'focusalphablending': true,
 
             'showscale': true,
             'reversescale': true,
@@ -137,9 +131,7 @@ var mock = {
         'blocklinecount': 5000,
         'type': 'parcoords',
         'line': {
-            'opacity': 1,
             'contextopacity': 0.0625,
-            'focusalphablending': true,
 
             'showscale': true,
             'reversescale': true,

@@ -160,7 +160,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
     var dimensionCount = initialDims.length;
     var sampleCount = initialDims.reduce(function(p, n) {return Math.min(p, n.values.length);}, initialDims[0].values.length);
 
-    var focusAlphaBlending = context || lines.focusalphablending;
+    var focusAlphaBlending = context;
 
     var canvasPanelSizeY = canvasHeight;
 
@@ -185,7 +185,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
         type: 'uint8',
         mag: 'nearest',
         min: 'nearest',
-        data: palette(unitToColor, context, Math.round((context ? lines.contextopacity : lines.opacity) * 255))
+        data: palette(unitToColor, context, Math.round((context ? lines.contextopacity : 1) * 255))
     });
 
     var glAes = regl({

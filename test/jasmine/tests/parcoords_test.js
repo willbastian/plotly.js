@@ -665,7 +665,7 @@ describe('parcoords', function() {
 
     });
 
-    describe('final test cases to move to plotly', function() {
+    describe('Lifecycle methods', function() {
 
         afterEach(destroyGraphDiv);
 

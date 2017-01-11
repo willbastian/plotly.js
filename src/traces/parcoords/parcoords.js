@@ -245,10 +245,10 @@ module.exports = function(root, styledData, layout, callbacks) {
         filterBarPattern.enter()
             .append('pattern')
             .attr('id', 'filterBarPattern')
-            .attr('x', -filterBar.width)
             .attr('patternUnits', 'userSpaceOnUse');
 
         filterBarPattern
+            .attr('x', -filterBar.width)
             .attr('width', filterBar.capturewidth)
             .attr('height', function(d) {return d.model.height;});
 
@@ -257,9 +257,11 @@ module.exports = function(root, styledData, layout, callbacks) {
 
         filterBarPatternGlyph.enter()
             .append('rect')
-            .attr('shape-rendering', 'crispEdges')
-            .attr('width', filterBar.width)
+            .attr('shape-rendering', 'crispEdges');
+
+        filterBarPatternGlyph
             .attr('height', function(d) {return d.model.height;})
+            .attr('width', filterBar.width)
             .attr('x', filterBar.width / 2)
             .attr('fill', filterBar.fillcolor)
             .attr('fill-opacity', filterBar.fillopacity)
@@ -281,7 +283,9 @@ module.exports = function(root, styledData, layout, callbacks) {
 
     parcoordsViewModel.enter()
         .append('div')
-        .classed('parcoordsViewModel', true)
+        .classed('parcoordsViewModel', true);
+
+    parcoordsViewModel
         .style('transform', function(d) {return 'translate(' + d.model.translateX + 'px,' + d.model.translateY + 'px)';});
 
     var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoordsLineLayer')
@@ -328,21 +332,25 @@ module.exports = function(root, styledData, layout, callbacks) {
         .append('svg')
         .classed('parcoordsControlOverlay', true)
         .attr('overflow', 'visible')
-        .attr('width', function(d) {return d.model.width + 2 * d.model.padding;})
-        .attr('height', function(d) {return d.model.height + 2 * d.model.padding;})
         .style('position', 'absolute')
         .style('left', 0)
         .style('overflow', 'visible')
         .style('shape-rendering', 'crispEdges')
         .call(enterSvgDefs);
 
+    parcoordsControlOverlay
+        .attr('width', function(d) {return d.model.width + 2 * d.model.padding;})
+        .attr('height', function(d) {return d.model.height + 2 * d.model.padding;});
+
     var parcoordsControlView = parcoordsControlOverlay.selectAll('.parcoordsControlView')
         .data(repeat, keyFun);
 
     parcoordsControlView.enter()
         .append('g')
-        .attr('transform', function(d) {return 'translate(' + d.model.padding + ',' + d.model.padding + ')';})
         .classed('parcoordsControlView', true);
+
+    parcoordsControlView
+        .attr('transform', function(d) {return 'translate(' + d.model.padding + ',' + d.model.padding + ')';});
 
     var clearFix = parcoordsViewModel.selectAll('.clearFix')
         .data(repeat, keyFun);
@@ -471,13 +479,15 @@ module.exports = function(root, styledData, layout, callbacks) {
     axisTitle.enter()
         .append('text')
         .classed('axisTitle', true)
-        .attr('transform', 'translate(0,' + -(filterBar.handleheight + 20) + ')')
-        .text(function(d) {return d.label;})
         .attr('text-anchor', 'middle')
         .style('font-family', 'sans-serif')
         .style('font-size', 'xx-small')
         .style('cursor', 'default')
         .style('user-select', 'none');
+
+    axisTitle
+        .attr('transform', 'translate(0,' + -(filterBar.handleheight + 20) + ')')
+        .text(function(d) {return d.label;});
 
     var axisExtent = axisOverlays.selectAll('.axisExtent')
         .data(repeat, keyFun);
@@ -491,7 +501,9 @@ module.exports = function(root, styledData, layout, callbacks) {
 
     axisExtentTop.enter()
         .append('g')
-        .classed('axisExtentTop', true)
+        .classed('axisExtentTop', true);
+
+    axisExtentTop
         .attr('transform', 'translate(' + 0 + ',' + -(filterBar.handleheight - 2) + ')');
 
     var axisExtentTopText = axisExtentTop.selectAll('.axisExtentTopText')
@@ -504,16 +516,20 @@ module.exports = function(root, styledData, layout, callbacks) {
     axisExtentTopText.enter()
         .append('text')
         .classed('axisExtentTopText', true)
-        .text(function(d) {return formatExtreme(d)(d.domainScale.domain().slice(-1)[0]);})
         .attr('alignment-baseline', 'after-edge')
         .call(styleExtentTexts);
+
+    axisExtentTopText
+        .text(function(d) {return formatExtreme(d)(d.domainScale.domain().slice(-1)[0]);});
 
     var axisExtentBottom = axisExtent.selectAll('.axisExtentBottom')
         .data(repeat, keyFun);
 
     axisExtentBottom.enter()
         .append('g')
-        .classed('axisExtentBottom', true)
+        .classed('axisExtentBottom', true);
+
+    axisExtentBottom
         .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + filterBar.handleheight - 2) + ')';});
 
     var axisExtentBottomText = axisExtentBottom.selectAll('.axisExtentBottomText')
@@ -522,9 +538,11 @@ module.exports = function(root, styledData, layout, callbacks) {
     axisExtentBottomText.enter()
         .append('text')
         .classed('axisExtentBottomText', true)
-        .text(function(d) {return formatExtreme(d)(d.domainScale.domain()[0]);})
         .attr('alignment-baseline', 'before-edge')
         .call(styleExtentTexts);
+
+    axisExtentBottomText
+        .text(function(d) {return formatExtreme(d)(d.domainScale.domain()[0]);});
 
     var axisBrush = axisOverlays.selectAll('.axisBrush')
         .data(repeat, keyFun);

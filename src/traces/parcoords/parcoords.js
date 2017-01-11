@@ -16,6 +16,7 @@ var d3 = require('d3');
 var overdrag = 40;
 var legendWidth = 80;
 var verticalPadding = 2; // otherwise, horizontal lines on top or bottom are of lower width
+var tickDistance = 50;
 
 var filterBar = {
     width: 4, // Visible width of the filter bar
@@ -156,7 +157,7 @@ function model(layout, d, i) {
     return {
         key: 'gensym' + i,
         dimensions: d.dimensions,
-        tickDistance: d.tickdistance,
+        tickDistance: tickDistance,
         unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
         lines: lines,
         translateX: (d.domain.x[0] || 0) * layout.width,

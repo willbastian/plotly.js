@@ -58,7 +58,6 @@ module.exports = function calc(gd, trace) {
     return [{
         domain: trace.domain,
         dimensions: cd,
-        tickdistance: trace.tickdistance,
         blocklinecount: trace.blocklinecount,
         line: trace.line,
         padding: trace.padding

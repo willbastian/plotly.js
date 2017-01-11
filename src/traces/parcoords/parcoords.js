@@ -9,29 +9,10 @@
 'use strict';
 
 var lineLayerMaker = require('./lines');
+var c = require('./constants');
 var Lib = require('../../lib');
 var d3 = require('d3');
 
-
-var overdrag = 40;
-var legendWidth = 80;
-var verticalPadding = 2; // otherwise, horizontal lines on top or bottom are of lower width
-var tickDistance = 50;
-var canvasPixelRatio = 1;
-var blockLineCount = 5000;
-
-var filterBar = {
-    width: 4, // Visible width of the filter bar
-    capturewidth: 20, // Mouse-sensitive width for interaction (Fitts law)
-    fillcolor: 'magenta', // Color of the filter bar fill
-    fillopacity: 1, // Filter bar fill opacity
-    strokecolor: 'white', // Color of the filter bar side lines
-    strokeopacity: 1, // Filter bar side stroke opacity
-    strokewidth: 1, // Filter bar side stroke width in pixels
-    handleheight: 16, // Height of the filter bar vertical resize areas on top and bottom
-    handleopacity: 1, // Opacity of the filter bar vertical resize areas on top and bottom
-    handleoverlap: 0 // A larger than 0 value causes overlaps with the filter bar, represented as pixels.'
-};
 
 function keyFun(d) {return d.key;}
 
@@ -143,31 +124,31 @@ function model(layout, d, i) {
 
     var lines = Lib.extendDeep({}, d.line, {
         color: d.line.color.map(domainToUnitScale({values: d.line.color})),
-        blockLineCount: blockLineCount,
-        canvasOverdrag: overdrag * canvasPixelRatio
+        blockLineCount: c.blockLineCount,
+        canvasOverdrag: c.overdrag * c.canvasPixelRatio
     });
 
     var layoutWidth = layout.width * (d.domain.x[1] - d.domain.x[0]);
     var layoutHeight = layout.height * (d.domain.y[1] - d.domain.y[0]);
 
     var pad = d.pad || {l: 80, r: 80, t: 80, b: 80};
-    var width = layoutWidth - pad.l - pad.r - legendWidth; // leavig room for the colorbar
+    var width = layoutWidth - pad.l - pad.r - c.legendWidth; // leavig room for the colorbar
     var height = layoutHeight - pad.t - pad.b;
 
     return {
         key: 'gensym' + i,
         dimensions: d.dimensions,
-        tickDistance: tickDistance,
+        tickDistance: c.tickDistance,
         unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
         lines: lines,
         translateX: (d.domain.x[0] || 0) * layout.width,
         translateY: (d.domain.y[0] || 0) * layout.height,
         pad: pad,
-        canvasWidth: width * canvasPixelRatio + 2 * lines.canvasOverdrag,
-        canvasHeight: height * canvasPixelRatio,
+        canvasWidth: width * c.canvasPixelRatio + 2 * lines.canvasOverdrag,
+        canvasHeight: height * c.canvasPixelRatio,
         width: width,
         height: height,
-        canvasPixelRatio: canvasPixelRatio
+        canvasPixelRatio: c.canvasPixelRatio
     };
 }
 
@@ -180,7 +161,7 @@ function viewModel(model) {
 
     var xScale = d3.scale.ordinal().domain(d3.range(dimensions.filter(visible).length)).rangePoints([0, width], 0);
 
-    var unitPad = verticalPadding / (height * canvasPixelRatio);
+    var unitPad = c.verticalPadding / (height * canvasPixelRatio);
     var unitPadScale = (1 - 2 * unitPad);
     var paddedUnitScale = function(d) {return unitPad + unitPadScale * d;};
 
@@ -212,8 +193,8 @@ function viewModel(model) {
             xScale: xScale,
             x: xScale(i),
             canvasX: xScale(i) * canvasPixelRatio,
-            unitScale: unitScale(height, verticalPadding),
-            domainScale: domainScale(height, verticalPadding, dimension),
+            unitScale: unitScale(height, c.verticalPadding),
+            domainScale: domainScale(height, c.verticalPadding, dimension),
             ordinalScale: ordinalScale(dimension),
             domainToUnitScale: domainToUnit,
             filter: dimension.constraintrange ? dimension.constraintrange.map(domainToUnit) : [0, 1],
@@ -254,8 +235,8 @@ module.exports = function(root, styledData, layout, callbacks) {
             .attr('patternUnits', 'userSpaceOnUse');
 
         filterBarPattern
-            .attr('x', -filterBar.width)
-            .attr('width', filterBar.capturewidth)
+            .attr('x', -c.bar.width)
+            .attr('width', c.bar.capturewidth)
             .attr('height', function(d) {return d.model.height;});
 
         var filterBarPatternGlyph = filterBarPattern.selectAll('rect')
@@ -267,13 +248,13 @@ module.exports = function(root, styledData, layout, callbacks) {
 
         filterBarPatternGlyph
             .attr('height', function(d) {return d.model.height;})
-            .attr('width', filterBar.width)
-            .attr('x', filterBar.width / 2)
-            .attr('fill', filterBar.fillcolor)
-            .attr('fill-opacity', filterBar.fillopacity)
-            .attr('stroke', filterBar.strokecolor)
-            .attr('stroke-opacity', filterBar.strokeopacity)
-            .attr('stroke-width', filterBar.strokewidth);
+            .attr('width', c.bar.width)
+            .attr('x', c.bar.width / 2)
+            .attr('fill', c.bar.fillcolor)
+            .attr('fill-opacity', c.bar.fillopacity)
+            .attr('stroke', c.bar.strokecolor)
+            .attr('stroke-opacity', c.bar.strokeopacity)
+            .attr('stroke-width', c.bar.strokewidth);
     }
 
     var parcoordsModel = d3.select(root).selectAll('.parcoordsModel')
@@ -311,7 +292,7 @@ module.exports = function(root, styledData, layout, callbacks) {
     parcoordsLineLayer.enter()
         .append('canvas')
         .classed('parcoordsLineLayer', true)
-        .style('transform', 'translate(' + (-overdrag) + 'px, 0)')
+        .style('transform', 'translate(' + (-c.overdrag) + 'px, 0)')
         .style('float', 'left')
         .style('clear', 'both')
         .style('left', 0)
@@ -325,7 +306,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         })
         .attr('width', function(d) {return d.viewModel.model.canvasWidth;})
         .attr('height', function(d) {return d.viewModel.model.canvasHeight;})
-        .style('width', function(d) {return (d.viewModel.model.width + 2 * overdrag) + 'px';})
+        .style('width', function(d) {return (d.viewModel.model.width + 2 * c.overdrag) + 'px';})
         .style('height', function(d) {return d.viewModel.model.height + 'px';})
         .each(function(d) {
             d.lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.panels, d.model.unitToColor, d.context);
@@ -393,7 +374,7 @@ module.exports = function(root, styledData, layout, callbacks) {
                 if(domainBrushing) {
                     return;
                 }
-                d.x = Math.max(-overdrag, Math.min(d.model.width + overdrag, d3.event.x));
+                d.x = Math.max(-c.overdrag, Math.min(d.model.width + c.overdrag, d3.event.x));
                 d.canvasX = d.x * d.model.canvasPixelRatio;
                 panel
                     .sort(function(a, b) {return a.x - b.x;})
@@ -495,7 +476,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         .style('user-select', 'none');
 
     axisTitle
-        .attr('transform', 'translate(0,' + -(filterBar.handleheight + 20) + ')')
+        .attr('transform', 'translate(0,' + -(c.bar.handleheight + 20) + ')')
         .text(function(d) {return d.label;});
 
     var axisExtent = axisOverlays.selectAll('.axisExtent')
@@ -513,7 +494,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         .classed('axisExtentTop', true);
 
     axisExtentTop
-        .attr('transform', 'translate(' + 0 + ',' + -(filterBar.handleheight - 2) + ')');
+        .attr('transform', 'translate(' + 0 + ',' + -(c.bar.handleheight - 2) + ')');
 
     var axisExtentTopText = axisExtentTop.selectAll('.axisExtentTopText')
         .data(repeat, keyFun);
@@ -539,7 +520,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         .classed('axisExtentBottom', true);
 
     axisExtentBottom
-        .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + filterBar.handleheight - 2) + ')';});
+        .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + c.bar.handleheight - 2) + ')';});
 
     var axisExtentBottomText = axisExtentBottom.selectAll('.axisExtentBottomText')
         .data(repeat, keyFun);
@@ -577,8 +558,8 @@ module.exports = function(root, styledData, layout, callbacks) {
 
     axisBrushEnter
         .selectAll('rect')
-        .attr('x', -filterBar.capturewidth / 2)
-        .attr('width', filterBar.capturewidth);
+        .attr('x', -c.bar.capturewidth / 2)
+        .attr('width', c.bar.capturewidth);
 
     axisBrushEnter
         .selectAll('rect.extent')
@@ -588,17 +569,17 @@ module.exports = function(root, styledData, layout, callbacks) {
 
     axisBrushEnter
         .selectAll('.resize rect')
-        .attr('height', filterBar.handleheight)
+        .attr('height', c.bar.handleheight)
         .attr('opacity', 0)
         .style('visibility', 'visible');
 
     axisBrushEnter
         .selectAll('.resize.n rect')
-        .attr('y', filterBar.handleoverlap - filterBar.handleheight);
+        .attr('y', c.bar.handleoverlap - c.bar.handleheight);
 
     axisBrushEnter
         .selectAll('.resize.s rect')
-        .attr('y', filterBar.handleoverlap);
+        .attr('y', c.bar.handleoverlap);
 
     var justStarted = false;
     var contextShown = false;

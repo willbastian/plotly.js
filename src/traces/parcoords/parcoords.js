@@ -150,9 +150,9 @@ function model(layout, d, i) {
     var layoutWidth = layout.width * (d.domain.x[1] - d.domain.x[0]);
     var layoutHeight = layout.height * (d.domain.y[1] - d.domain.y[0]);
 
-    var padding = d.padding || 80;
-    var width = layoutWidth - 2 * padding - legendWidth; // leavig room for the colorbar
-    var height = layoutHeight - 2 * padding;
+    var pad = d.pad || {l: 80, r: 80, t: 80, b: 80};
+    var width = layoutWidth - pad.l - pad.r - legendWidth; // leavig room for the colorbar
+    var height = layoutHeight - pad.t - pad.b;
 
     return {
         key: 'gensym' + i,
@@ -162,7 +162,7 @@ function model(layout, d, i) {
         lines: lines,
         translateX: (d.domain.x[0] || 0) * layout.width,
         translateY: (d.domain.y[0] || 0) * layout.height,
-        padding: padding,
+        pad: pad,
         canvasWidth: width * canvasPixelRatio + 2 * lines.canvasOverdrag,
         canvasHeight: height * canvasPixelRatio,
         width: width,
@@ -319,7 +319,10 @@ module.exports = function(root, styledData, layout, callbacks) {
         .style('position', function(d, i) {return i > 0 ? 'absolute' : 'static';});
 
     parcoordsLineLayer
-        .style('padding', function(d) {return d.viewModel.model.padding + 'px';})
+        .style('padding', function(d) {
+            var p = d.viewModel.model.pad;
+            return p.t + 'px ' + p.r + 'px ' + p.b + 'px ' + p.l + 'px';
+        })
         .attr('width', function(d) {return d.viewModel.model.canvasWidth;})
         .attr('height', function(d) {return d.viewModel.model.canvasHeight;})
         .style('width', function(d) {return (d.viewModel.model.width + 2 * overdrag) + 'px';})
@@ -345,8 +348,8 @@ module.exports = function(root, styledData, layout, callbacks) {
         .call(enterSvgDefs);
 
     parcoordsControlOverlay
-        .attr('width', function(d) {return d.model.width + 2 * d.model.padding;})
-        .attr('height', function(d) {return d.model.height + 2 * d.model.padding;});
+        .attr('width', function(d) {return d.model.width + d.model.pad.l + d.model.pad.r;})
+        .attr('height', function(d) {return d.model.height + d.model.pad.t + d.model.pad.b;});
 
     var parcoordsControlView = parcoordsControlOverlay.selectAll('.parcoordsControlView')
         .data(repeat, keyFun);
@@ -356,7 +359,7 @@ module.exports = function(root, styledData, layout, callbacks) {
         .classed('parcoordsControlView', true);
 
     parcoordsControlView
-        .attr('transform', function(d) {return 'translate(' + d.model.padding + ',' + d.model.padding + ')';});
+        .attr('transform', function(d) {return 'translate(' + d.model.pad.l + ',' + d.model.pad.t + ')';});
 
     var clearFix = parcoordsViewModel.selectAll('.clearFix')
         .data(repeat, keyFun);

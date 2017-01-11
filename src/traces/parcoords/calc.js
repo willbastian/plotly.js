@@ -59,6 +59,6 @@ module.exports = function calc(gd, trace) {
         domain: trace.domain,
         dimensions: cd,
         line: trace.line,
-        padding: trace.padding
+        pad: trace.pad
     }];
 };

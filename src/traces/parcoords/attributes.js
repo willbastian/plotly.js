@@ -11,7 +11,9 @@
 var colorAttributes = require('../../components/colorscale/color_attributes');
 var colorbarAttrs = require('../../components/colorbar/attributes');
 var axesAttrs = require('../../plots/cartesian/layout_attributes');
+var padAttrs = require('../../plots/pad_attributes');
 
+var extendDeep = require('../../lib/extend').extendDeep;
 var extendFlat = require('../../lib/extend').extendFlat;
 
 module.exports = {
@@ -88,13 +90,9 @@ module.exports = {
         description: 'The dimensions (variables) of the parallel coordinates chart. 2..63 dimensions are supported.'
     },
 
-    padding: {
-        valType: 'number',
-        dflt: 80,
-        min: 0,
-        role: 'style',
-        description: 'The desired space for displaying axis labels and domain ranges around the actual parcoords.'
-    },
+    pad: extendDeep({}, padAttrs, {
+        description: 'Set the padding of the `parcoords` component along each side to provide space for annotations.'
+    }, {t: {dflt: 80}, l: {dflt: 80}, r: {dflt: 80}, b: {dflt: 80}}),
 
     line: extendFlat({},
 

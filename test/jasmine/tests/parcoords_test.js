@@ -17,7 +17,6 @@ var mock0 = { // mock with zero dimensions; special case, as no dimension can be
             'y': [0, 1]
         },
 
-        'padding': 80,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,
@@ -46,7 +45,6 @@ var mock1 = { // mock with one dimension (zero panel); special case, as no panel
             'y': [0, 1]
         },
 
-        'padding': 80,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,
@@ -82,7 +80,6 @@ var mock2 = { // mock with two dimensions (one panel); special case, e.g. left a
             'y': [0, 1]
         },
 
-        'padding': 80,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,
@@ -124,7 +121,6 @@ var mock = {
             'y': [0, 1]
         },
 
-        'padding': 80,
         'type': 'parcoords',
         'line': {
             'contextopacity': 0.0625,

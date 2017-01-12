@@ -16,7 +16,11 @@ module.exports = function plot(gd, cdparcoords) {
 
     var fullLayout = gd._fullLayout;
     var root = fullLayout._glcontainer.node();
-    var data = cdparcoords.map(function(d) {return d[0];});
+    var data = cdparcoords.map(function(d, i) {
+        var item = Lib.extendDeep(d[0]);
+        item._gdDataItem = gd.data[i];
+        return item;
+    });
 
     var filterChangedCallback = function(value) {
 

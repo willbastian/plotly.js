@@ -137,6 +137,8 @@ function model(layout, d, i) {
 
     return {
         key: 'gensym' + i,
+        _gdDimensions: d._gdDataItem.dimensions,
+        _gdDimensionsOriginalOrder: d._gdDataItem.dimensions.slice(),
         dimensions: d.dimensions,
         tickDistance: c.tickDistance,
         unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
@@ -400,6 +402,26 @@ module.exports = function(root, styledData, layout, callbacks) {
                     .attr('transform', function(d) {return 'translate(' + d.x + ', 0)';});
                 d.parent.contextLineLayer.render(d.parent.panels, false, !someFiltersActive(d.parent));
                 d.parent.focusLineLayer.render(d.parent.panels);
+
+                // Have updated order data on `gd.data` and raise `Plotly.restyle` event
+                // without having to incur heavy UI blocking due to an actual `Plotly.restyle` call
+
+                var orig = d.parent.model._gdDimensionsOriginalOrder
+                    .filter(function(d) {return d.visible === void(0) || d.visible;});
+                function newIdx(dim) {
+                    var origIndex = orig.indexOf(dim);
+                    var currentIndex = d.parent.panels.map(function(dd) {return dd.originalXIndex;}).indexOf(origIndex);
+                    if(currentIndex === -1) {
+                        // invisible dimensions go to the end, retaining their original order
+                        currentIndex += orig.length;
+                    }
+                    return currentIndex;
+                }
+                d.model._gdDimensions.sort(function(d1, d2) {
+                    var i1 = newIdx(d1);
+                    var i2 = newIdx(d2);
+                    return i1 - i2;
+                });
             })
         );
 

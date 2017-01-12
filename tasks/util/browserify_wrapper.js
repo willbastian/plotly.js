@@ -38,7 +38,7 @@ module.exports = function _bundle(pathToIndex, pathToBundle, opts) {
     var browserifyOpts = {};
     browserifyOpts.standalone = opts.standalone;
     browserifyOpts.debug = opts.debug;
-    browserifyOpts.transform = outputMinified ? ['glslify', compressAttributes] : ['glslify'];
+    browserifyOpts.transform = outputMinified ? [compressAttributes] : [];
 
     var b = browserify(pathToIndex, browserifyOpts),
         bundleWriteStream = fs.createWriteStream(pathToBundle);

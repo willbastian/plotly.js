@@ -219,7 +219,7 @@ function styleExtentTexts(selection) {
         .style('user-select', 'none');
 }
 
-module.exports = function(root, styledData, layout, callbacks) {
+module.exports = function(gd, root, styledData, layout, callbacks) {
 
     function enterSvgDefs(root) {
         var defs = root.selectAll('defs')
@@ -394,6 +394,9 @@ module.exports = function(root, styledData, layout, callbacks) {
             })
             .on('dragend', function(d) {
                 if(domainBrushing) {
+                    if(domainBrushing === 'ending') {
+                        domainBrushing = false;
+                    }
                     return;
                 }
                 d.x = d.xScale(d.xIndex);
@@ -422,6 +425,7 @@ module.exports = function(root, styledData, layout, callbacks) {
                     var i2 = newIdx(d2);
                     return i1 - i2;
                 });
+                gd.emit('plotly_restyle');
             })
         );
 
@@ -651,7 +655,7 @@ module.exports = function(root, styledData, layout, callbacks) {
             d3.select(this).transition().duration(150).call(dimension.brush.extent(f));
             dimension.parent.focusLineLayer.render(panels, true);
         }
-        domainBrushing = false;
+        domainBrushing = 'ending';
         if(callbacks && callbacks.filterChangedCallback) {
             callbacks.filterChangedCallback({
                 changedDimension: {

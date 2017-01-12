@@ -100,7 +100,7 @@ func.defaultConfig = {
     singleRun: false,
 
     browserify: {
-        transform: ['glslify', '../../tasks/util/shortcut_paths.js'],
+        transform: ['../../tasks/util/shortcut_paths.js'],
         extensions: ['.js'],
         watch: true,
         debug: true

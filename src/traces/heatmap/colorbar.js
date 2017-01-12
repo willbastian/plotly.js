@@ -16,7 +16,6 @@ var Plots = require('../../plots/plots');
 var Colorscale = require('../../components/colorscale');
 var drawColorbar = require('../../components/colorbar/draw');
 
-// TODO unify parcoords, scatter and heatmap colorbar
 module.exports = function colorbar(gd, cd) {
     var trace = cd[0].trace,
         cbId = 'cb' + trace.uid,

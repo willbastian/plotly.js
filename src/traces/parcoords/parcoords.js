@@ -657,24 +657,17 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
         }
         domainBrushing = 'ending';
         if(callbacks && callbacks.filterChangedCallback) {
-            callbacks.filterChangedCallback({
-                changedDimension: {
-                    key: dimension.key,
-                    label: dimension.label,
-                    modelIndex: dimension.model.key,
-                    index: panels.indexOf(dimension),
-                    domainFilter: f.map(dimension.domainToUnitScale.invert),
-                    fullDomain: f[0] === 0 && f[1] === 1
-                },
-                allDimensions: panels.map(function(p) {
-                    return {
-                        key: p.key,
-                        label: p.label,
-                        domainFilter: p.filter.map(p.domainToUnitScale.invert),
-                        fullDomain: p.filter[0] === 0 && p.filter[1] === 1
-                    };
-                })
-            });
+            var invScale = dimension.domainToUnitScale.invert;
+
+            // update gd.data as if a Plotly.restyle were fired
+            var gdDimension = dimension.parent.model._gdDimensionsOriginalOrder[dimension.originalXIndex];
+            var gdConstraintRange = gdDimension.constraintrange;
+            if(!gdConstraintRange || gdConstraintRange.length !== 2) {
+                gdConstraintRange = gdDimension.constraintrange = [];
+            }
+            gdConstraintRange[0] = invScale(f[0]);
+            gdConstraintRange[1] = invScale(f[1]);
+            callbacks.filterChangedCallback();
         }
     }
 

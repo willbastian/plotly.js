@@ -279,10 +279,10 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
 
     var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoordsLineLayer')
         .data(function(vm) {
-            return [true, false].map(function(context) {
+            return ['contextLineLayer', 'focusLineLayer'].map(function(key) {
                 return {
-                    key: context ? 'contextLineLayer' : 'focusLineLayer',
-                    context: context,
+                    key: key,
+                    context: key === 'contextLineLayer',
                     viewModel: vm,
                     model: vm.model
                 };

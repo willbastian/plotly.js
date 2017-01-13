@@ -165,6 +165,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
     var canvasPanelSizeY = canvasHeight;
 
     var color = lines.color;
+    var contextOpacity = Math.max(1 / 255, Math.pow(1 / color.length, 1 / 3));
     var overdrag = lines.canvasOverdrag;
 
     var panelCount = dimensionCount - 1;
@@ -185,7 +186,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
         type: 'uint8',
         mag: 'nearest',
         min: 'nearest',
-        data: palette(unitToColor, context, Math.round((context ? lines.contextopacity : 1) * 255))
+        data: palette(unitToColor, context, Math.round((context ? contextOpacity : 1) * 255))
     });
 
     var glAes = regl({

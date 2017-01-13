@@ -109,17 +109,6 @@ module.exports = {
                 ].join(' ')
             },
             colorbar: colorbarAttrs
-        },
-
-        {
-            contextopacity: {
-                valType: 'number',
-                dflt: 0.05,
-                min: 0,
-                max: 1,
-                role: 'style',
-                description: 'Opacity of the context lines, on a scale of 0 (invisible) to 1 (fully opaque).'
-            }
         }
     )
 };

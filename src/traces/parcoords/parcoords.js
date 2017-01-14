@@ -205,7 +205,7 @@ function viewModel(model) {
         };
     });
 
-    return [viewModel];
+    return viewModel;
 }
 
 function styleExtentTexts(selection) {
@@ -262,16 +262,10 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
             .attr('stroke-width', c.bar.strokewidth);
     }
 
-    var parcoordsModel = d3.select(root).selectAll('.parcoordsModel')
-        .data(styledData.map(model.bind(0, layout)), keyFun);
+    var vm = styledData.map(model.bind(0, layout)).map(viewModel);
 
-    parcoordsModel.enter()
-        .append('div')
-        .style('position', 'relative')
-        .classed('parcoordsModel', true);
-
-    var parcoordsViewModel = parcoordsModel.selectAll('.parcoordsViewModel')
-        .data(viewModel, keyFun);
+    var parcoordsViewModel = d3.select(root).selectAll('.parcoordsViewModel')
+        .data(vm, keyFun);
 
     parcoordsViewModel.enter()
         .append('div')

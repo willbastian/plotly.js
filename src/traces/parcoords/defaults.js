@@ -34,7 +34,7 @@ function dimensionsDefaults(traceIn, traceOut) {
 
     var dimensionIn, dimensionOut;
 
-    dimensionsIn.splice(63); // parcoords supports up to 63 dimensions
+    dimensionsIn.splice(60); // parcoords supports up to this many dimensions
 
     function coerce(attr, dflt) {
         return Lib.coerce(dimensionIn, dimensionOut, attributes.dimensions, attr, dflt);

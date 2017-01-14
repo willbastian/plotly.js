@@ -136,7 +136,7 @@ function model(layout, d, i) {
     var height = layoutHeight - pad.t - pad.b;
 
     return {
-        key: 'gensym' + i,
+        key: i,
         _gdDimensions: d._gdDataItem.dimensions,
         _gdDimensionsOriginalOrder: d._gdDataItem.dimensions.slice(),
         dimensions: d.dimensions,
@@ -221,6 +221,9 @@ function styleExtentTexts(selection) {
 
 module.exports = function(gd, root, styledData, layout, callbacks) {
 
+    var domainBrushing = false;
+    var linePickActive = true;
+
     function enterSvgDefs(root) {
         var defs = root.selectAll('defs')
             .data(repeat, keyFun);
@@ -279,10 +282,11 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
 
     var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoordsLineLayer')
         .data(function(vm) {
-            return ['contextLineLayer', 'focusLineLayer'].map(function(key) {
+            return ['contextLineLayer', 'focusLineLayer', 'pickLineLayer'].map(function(key) {
                 return {
                     key: key,
                     context: key === 'contextLineLayer',
+                    pick: key === 'pickLineLayer',
                     viewModel: vm,
                     model: vm.model
                 };
@@ -293,13 +297,35 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
 
     parcoordsLineLayer.enter()
         .append('canvas')
-        .classed('parcoordsLineLayer', true)
+        .attr('class', function(d) {return 'parcoordsLineLayer ' + (d.context ? 'context' : d.pick ? 'pick' : 'focus');})
         .style('transform', 'translate(' + (-c.overdrag) + 'px, 0)')
         .style('float', 'left')
         .style('clear', 'both')
         .style('left', 0)
         .style('overflow', 'visible')
-        .style('position', function(d, i) {return i > 0 ? 'absolute' : 'static';});
+        .style('position', function(d, i) {return i > 0 ? 'absolute' : 'static';})
+        .filter(function(d) {return d.pick;})
+        .on('mousemove', function(d) {
+            if(linePickActive && d.lineLayer && callbacks && callbacks.hover) {
+                var event = d3.event;
+                var cw = this.width;
+                var ch = this.height;
+                var x = event.layerX - d.viewModel.model.pad.l + c.overdrag;
+                var y = event.layerY - d.viewModel.model.pad.t;
+                if(x < 0 || y < 0 || x >= cw || y >= ch) {
+                    return;
+                }
+                var pixel = d.lineLayer.readPixel(x, ch - 1 - y);
+                if(pixel[3] !== 0) {
+                    callbacks.hover({
+                        x: x,
+                        y: y,
+                        dataIndex: d.model.key,
+                        curveNumber: pixel[2] + 256 * (pixel[1] + 256 * pixel[0])
+                    });
+                }
+            }
+        });
 
     parcoordsLineLayer
         .style('padding', function(d) {
@@ -310,8 +336,9 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
         .attr('height', function(d) {return d.viewModel.model.canvasHeight;})
         .style('width', function(d) {return (d.viewModel.model.width + 2 * c.overdrag) + 'px';})
         .style('height', function(d) {return d.viewModel.model.height + 'px';})
+        .style('opacity', function(d) {return d.pick ? 0.01 : 1;})
         .each(function(d) {
-            d.lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.panels, d.model.unitToColor, d.context);
+            d.lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.panels, d.model.unitToColor, d.context, d.pick);
             d.viewModel[d.key] = d.lineLayer;
             tweakables.renderers.push(function() {d.lineLayer.render(d.viewModel.panels, true);});
             d.lineLayer.render(d.viewModel.panels, !d.context, d.context && !someFiltersActive(d.viewModel));
@@ -328,6 +355,7 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
         .style('left', 0)
         .style('overflow', 'visible')
         .style('shape-rendering', 'crispEdges')
+        .style('pointer-events', 'none')
         .call(enterSvgDefs);
 
     parcoordsControlOverlay
@@ -355,8 +383,6 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
     var panel = parcoordsControlView.selectAll('.panel')
         .data(function(vm) {return vm.panels;}, keyFun);
 
-    var domainBrushing = false;
-
     function someFiltersActive(view) {
         return view.panels.some(function(p) {return p.filter[0] !== 0 || p.filter[1] !== 1;});
     }
@@ -373,6 +399,7 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
         .call(d3.behavior.drag()
             .origin(function(d) {return d;})
             .on('drag', function(d) {
+                linePickActive = false;
                 if(domainBrushing) {
                     return;
                 }
@@ -405,6 +432,8 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
                     .attr('transform', function(d) {return 'translate(' + d.x + ', 0)';});
                 d.parent.contextLineLayer.render(d.parent.panels, false, !someFiltersActive(d.parent));
                 d.parent.focusLineLayer.render(d.parent.panels);
+                d.parent.pickLineLayer.render(d.parent.panels, true);
+                linePickActive = true;
 
                 // Have updated order data on `gd.data` and raise `Plotly.restyle` event
                 // without having to incur heavy UI blocking due to an actual `Plotly.restyle` call
@@ -499,7 +528,8 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
         .style('font-family', 'sans-serif')
         .style('font-size', 'xx-small')
         .style('cursor', 'default')
-        .style('user-select', 'none');
+        .style('user-select', 'none')
+        .style('pointer-events', 'auto');
 
     axisTitle
         .attr('transform', 'translate(0,' + -(c.bar.handleheight + 20) + ')')
@@ -616,6 +646,7 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
     }
 
     function axisBrushMoved(dimension) {
+        linePickActive = false;
         var extent = dimension.brush.extent();
         var panels = dimension.parent.panels;
         var filter = panels[dimension.xIndex].filter;
@@ -655,8 +686,10 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
             d3.select(this).transition().duration(150).call(dimension.brush.extent(f));
             dimension.parent.focusLineLayer.render(panels, true);
         }
+        dimension.parent.pickLineLayer.render(panels, true);
+        linePickActive = true;
         domainBrushing = 'ending';
-        if(callbacks && callbacks.filterChangedCallback) {
+        if(callbacks && callbacks.filterChanged) {
             var invScale = dimension.domainToUnitScale.invert;
 
             // update gd.data as if a Plotly.restyle were fired
@@ -667,7 +700,7 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
             }
             gdConstraintRange[0] = invScale(f[0]);
             gdConstraintRange[1] = invScale(f[1]);
-            callbacks.filterChangedCallback();
+            callbacks.filterChanged();
         }
     }
 

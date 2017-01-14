@@ -21,8 +21,12 @@ module.exports = function plot(gd, cdparcoords) {
         return item;
     });
 
-    var filterChangedCallback = function() {
+    var filterChanged = function() {
         gd.emit('plotly_restyle');
+    };
+
+    var hover = function(eventData) {
+        gd.emit('plotly_hover', eventData);
     };
 
     parcoords(
@@ -34,6 +38,7 @@ module.exports = function plot(gd, cdparcoords) {
             height: fullLayout.height
         },
         {
-            filterChangedCallback: filterChangedCallback
+            filterChanged: filterChanged,
+            hover: hover
         });
 };

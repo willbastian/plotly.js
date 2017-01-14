@@ -208,6 +208,18 @@ function viewModel(model) {
     return viewModel;
 }
 
+function lineLayerModel(vm) {
+    return ['contextLineLayer', 'focusLineLayer', 'pickLineLayer'].map(function(key) {
+        return {
+            key: key,
+            context: key === 'contextLineLayer',
+            pick: key === 'pickLineLayer',
+            viewModel: vm,
+            model: vm.model
+        };
+    });
+}
+
 function styleExtentTexts(selection) {
     selection
         .classed('axisExtentText', true)
@@ -275,17 +287,7 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
         .style('transform', function(d) {return 'translate(' + d.model.translateX + 'px,' + d.model.translateY + 'px)';});
 
     var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoordsLineLayer')
-        .data(function(vm) {
-            return ['contextLineLayer', 'focusLineLayer', 'pickLineLayer'].map(function(key) {
-                return {
-                    key: key,
-                    context: key === 'contextLineLayer',
-                    pick: key === 'pickLineLayer',
-                    viewModel: vm,
-                    model: vm.model
-                };
-            });
-        }, keyFun);
+        .data(lineLayerModel, keyFun);
 
     var tweakables = {renderers: [], dimensions: []};
 

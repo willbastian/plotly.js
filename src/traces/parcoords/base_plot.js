@@ -9,8 +9,8 @@
 'use strict';
 
 var Registry = require('../../registry');
-var Plots = require('../../plots/plots');
-var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
+// var Plots = require('../../plots/plots');
+// var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
 
 
 exports.name = 'parcoords';
@@ -26,9 +26,10 @@ exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout)
     oldFullLayout._glcontainer.selectAll('.parcoordsModel').remove();
 };
 
-exports.toSVG = function(gd) {
+exports.toSVG = function(/* gd */) {
 
 
+/*
     return;
 
     var Parcoords = Registry.getModule('parcoords');
@@ -58,7 +59,8 @@ exports.toSVG = function(gd) {
 
         scene.destroy();
     }
-}
+*/
+};
 
 function getCdModule(calcdata, _module) {
     var cdModule = [];

@@ -120,7 +120,7 @@ function unitToColorScale(cscale, cmin, cmax, coloringArray) {
     };
 }
 
-function model(layout, d, i) {
+function model(layout, d, i, a) {
 
     var lines = Lib.extendDeep({}, d.line, {
         color: d.line.color.map(domainToUnitScale({values: d.line.color})),
@@ -128,8 +128,9 @@ function model(layout, d, i) {
         canvasOverdrag: c.overdrag * c.canvasPixelRatio
     });
 
+    var rowCount = a.length;
     var layoutWidth = layout.width * (d.domain.x[1] - d.domain.x[0]);
-    var layoutHeight = layout.height * (d.domain.y[1] - d.domain.y[0]);
+    var layoutHeight = layout.height * (d.domain.y[1] - d.domain.y[0]) / rowCount;
 
     var pad = d.pad || {l: 80, r: 80, t: 80, b: 80};
     var width = layoutWidth - pad.l - pad.r - c.legendWidth; // leavig room for the colorbar
@@ -231,7 +232,7 @@ function styleExtentTexts(selection) {
         .style('user-select', 'none');
 }
 
-module.exports = function(gd, root, styledData, layout, callbacks) {
+module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     var domainBrushing = false;
     var linePickActive = true;
@@ -276,15 +277,18 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
 
     var vm = styledData.map(model.bind(0, layout)).map(viewModel);
 
-    var parcoordsViewModel = d3.select(root).selectAll('.parcoordsViewModel')
+    var parcoordsViewModel = root.selectAll('.parcoordsViewModel')
         .data(vm, keyFun);
 
     parcoordsViewModel.enter()
-        .append('div')
+        .insert('div', '.' + svg.attr('class').split(' ').join(' .')) // not hardcoding .main-svg
         .classed('parcoordsViewModel', true);
 
     parcoordsViewModel
-        .style('transform', function(d) {return 'translate(' + d.model.translateX + 'px,' + d.model.translateY + 'px)';});
+        .style('transform', function(d, i) {
+            var translateY = i * (d.model.height + d.model.pad.t + d.model.pad.b);
+            return 'translate(' + d.model.translateX + 'px,' + (d.model.translateY + translateY) + 'px)';
+        });
 
     var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoordsLineLayer')
         .data(lineLayerModel, keyFun);
@@ -299,15 +303,16 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
         .style('clear', 'both')
         .style('left', 0)
         .style('overflow', 'visible')
-        .style('position', function(d, i) {return i > 0 ? 'absolute' : 'static';})
+        .style('position', function(d, i) {return i > 0 ? 'absolute' : 'absolute';})
         .filter(function(d) {return d.pick;})
         .on('mousemove', function(d) {
             if(linePickActive && d.lineLayer && callbacks && callbacks.hover) {
                 var event = d3.event;
                 var cw = this.width;
                 var ch = this.height;
-                var x = event.layerX - d.viewModel.model.pad.l + c.overdrag;
-                var y = event.layerY - d.viewModel.model.pad.t;
+                var translateY = d.model.key * (d.model.height + d.model.pad.t + d.model.pad.b);
+                var x = event.layerX - d.model.pad.l + c.overdrag;
+                var y = event.layerY - d.model.pad.t - translateY;
                 if(x < 0 || y < 0 || x >= cw || y >= ch) {
                     return;
                 }
@@ -340,11 +345,12 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
             d.lineLayer.render(d.viewModel.panels, !d.context, d.context && !someFiltersActive(d.viewModel));
         });
 
-    var parcoordsControlOverlay = parcoordsViewModel.selectAll('.parcoordsControlOverlay')
-        .data(repeat, keyFun);
+    svg.style('background', 'rgba(255, 255, 255, 0)');
+    var parcoordsControlOverlay = svg.selectAll('.parcoordsControlOverlay')
+        .data(vm, keyFun);
 
     parcoordsControlOverlay.enter()
-        .append('svg')
+        .append('g')
         .classed('parcoordsControlOverlay', true)
         .attr('overflow', 'visible')
         .style('position', 'absolute')
@@ -356,7 +362,11 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
 
     parcoordsControlOverlay
         .attr('width', function(d) {return d.model.width + d.model.pad.l + d.model.pad.r;})
-        .attr('height', function(d) {return d.model.height + d.model.pad.t + d.model.pad.b;});
+        .attr('height', function(d) {return d.model.height + d.model.pad.t + d.model.pad.b;})
+        .attr('transform', function(d, i) {
+            var translateY = i * (d.model.height + d.model.pad.t + d.model.pad.b);
+            return 'translate(0,' + translateY + ')';
+        });
 
     var parcoordsControlView = parcoordsControlOverlay.selectAll('.parcoordsControlView')
         .data(repeat, keyFun);
@@ -367,14 +377,6 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
 
     parcoordsControlView
         .attr('transform', function(d) {return 'translate(' + d.model.pad.l + ',' + d.model.pad.t + ')';});
-
-    var clearFix = parcoordsViewModel.selectAll('.clearFix')
-        .data(repeat, keyFun);
-
-    clearFix.enter()
-        .append('br')
-        .classed('clearFix', true)
-        .style('clear', 'both');
 
     var panel = parcoordsControlView.selectAll('.panel')
         .data(function(vm) {return vm.panels;}, keyFun);
@@ -469,7 +471,9 @@ module.exports = function(gd, root, styledData, layout, callbacks) {
 
     var axisEnter = axis.enter()
         .append('g')
-        .classed('axis', true)
+        .classed('axis', true);
+
+    axis
         .each(function(d) {
             var wantedTickCount = d.model.height / d.model.tickDistance;
             var scale = d.domainScale;

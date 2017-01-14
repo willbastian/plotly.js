@@ -77,7 +77,6 @@ void main() {
         1.0
     );
 
-    // visible coloring
-    float clampedColorIndex = clamp((prominence - colorClamp[0]) / (colorClamp[1] - colorClamp[0]), 0.0, 1.0);
-    fragColor = texture2D(palette, vec2((clampedColorIndex * 255.0 + 0.5) / 256.0, 0.5));
+    // pick coloring
+    fragColor = vec4(pf.rgb, 1.0);
 }

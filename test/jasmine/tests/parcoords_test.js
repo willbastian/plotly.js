@@ -368,7 +368,7 @@ describe('parcoords', function() {
             });
         });
 
-        it('Works with 63 dimensions; also, use default color', function(done) {
+        it('Works with 60 dimensions; also, use default color', function(done) {
 
             var mockCopy = Lib.extendDeep({}, mock1);
             var newDimension, i, j;
@@ -376,7 +376,7 @@ describe('parcoords', function() {
             mockCopy.layout.width = 1680;
             mockCopy.data[0].dimensions = [];
             delete mockCopy.data[0].line;
-            for(i = 0; i < 63; i++) {
+            for(i = 0; i < 60; i++) {
                 newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
                 newDimension.id = 'S' + i;
                 newDimension.label = 'S' + i;
@@ -393,13 +393,13 @@ describe('parcoords', function() {
             Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
 
                 expect(gd.data.length).toEqual(1);
-                expect(gd.data[0].dimensions.length).toEqual(63);
-                expect(document.querySelectorAll('.axis').length).toEqual(63);
+                expect(gd.data[0].dimensions.length).toEqual(60);
+                expect(document.querySelectorAll('.axis').length).toEqual(60);
                 done();
             });
         });
 
-        it('Truncates 63+ dimensions to 63', function(done) {
+        it('Truncates 60+ dimensions to 60', function(done) {
 
             var mockCopy = Lib.extendDeep({}, mock1);
             var newDimension, i, j;
@@ -421,8 +421,8 @@ describe('parcoords', function() {
             Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
 
                 expect(gd.data.length).toEqual(1);
-                expect(gd.data[0].dimensions.length).toEqual(63);
-                expect(document.querySelectorAll('.axis').length).toEqual(63);
+                expect(gd.data[0].dimensions.length).toEqual(60);
+                expect(document.querySelectorAll('.axis').length).toEqual(60);
                 done();
             });
         });
@@ -433,7 +433,7 @@ describe('parcoords', function() {
             var newDimension, i, j;
 
             mockCopy.layout.width = 1680;
-            for(i = 0; i < 63; i++) {
+            for(i = 0; i < 60; i++) {
                 newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
                 newDimension.id = 'S' + i;
                 newDimension.label = 'S' + i;
@@ -450,8 +450,8 @@ describe('parcoords', function() {
             Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
 
                 expect(gd.data.length).toEqual(1);
-                expect(gd.data[0].dimensions.length).toEqual(63);
-                expect(document.querySelectorAll('.axis').length).toEqual(63);
+                expect(gd.data[0].dimensions.length).toEqual(60);
+                expect(document.querySelectorAll('.axis').length).toEqual(60);
                 done();
             });
         });

@@ -14,11 +14,11 @@ module.exports = {
     legendWidth: 80,
     verticalPadding: 2, // otherwise, horizontal lines on top or bottom are of lower width
     tickDistance: 50,
-    canvasPixelRatio: window.devicePixelRatio,
+    canvasPixelRatio: 1,
     blockLineCount: 5000,
     bar: {
         width: 4, // Visible width of the filter bar
-        capturewidth: 20, // Mouse-sensitive width for interaction (Fitts law)
+        capturewidth: 10, // Mouse-sensitive width for interaction (Fitts law)
         fillcolor: 'magenta', // Color of the filter bar fill
         fillopacity: 1, // Filter bar fill opacity
         strokecolor: 'white', // Color of the filter bar side lines

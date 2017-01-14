@@ -11,6 +11,7 @@
 var createREGL = require('regl');
 var glslify = require('glslify');
 var vertexShaderSource = glslify('./shaders/vertex.glsl');
+var pickVertexShaderSource = glslify('./shaders/pickVertex.glsl');
 var fragmentShaderSource = glslify('./shaders/fragment.glsl');
 
 var depthLimitEpsilon = 1e-6; // don't change; otherwise near/far plane lines are lost
@@ -23,6 +24,8 @@ var vec4NumberCount = 4;
 var contextColor = [119, 119, 119]; // middle gray to not drawn the focus; looks good on a black or white background
 
 var dummyPixel = new Uint8Array(4);
+var pickPixel = new Uint8Array(4);
+
 function ensureDraw(regl) {
     regl.read({
         x: 0,
@@ -99,6 +102,10 @@ function palette(unitToColor, context, opacity) {
     return result;
 }
 
+function calcPickColor(j, rgbIndex) {
+    return (j >>> 8 * rgbIndex) % 256 / 255;
+}
+
 function makePoints(sampleCount, dimensionCount, dimensions, color) {
 
     var points = [];
@@ -108,7 +115,9 @@ function makePoints(sampleCount, dimensionCount, dimensions, color) {
                 dimensions[i].paddedUnitValues[j] :
                 i === (gpuDimensionCount - 1) ?
                     adjustDepth(color[j]) :
-                    0.5);
+                    i >= gpuDimensionCount - 4 ?
+                        calcPickColor(j, gpuDimensionCount - 2 - i) :
+                        0.5);
         }
     }
 
@@ -147,7 +156,7 @@ function makeAttributes(sampleCount, points) {
     return attributes;
 }
 
-module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDimensions, unitToColor, context) {
+module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDimensions, unitToColor, context, pick) {
 
     var renderState = {
         currentRafs: {},
@@ -164,7 +173,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
 
     var canvasPanelSizeY = canvasHeight;
 
-    var color = lines.color;
+    var color = pick ? lines.color.map(function(_, i) {return i / lines.color.length;}) : lines.color;
     var contextOpacity = Math.max(1 / 255, Math.pow(1 / color.length, 1 / 3));
     var overdrag = lines.canvasOverdrag;
 
@@ -176,7 +185,8 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
     var regl = createREGL({
         canvas: canvasGL,
         attributes: {
-            preserveDrawingBuffer: true
+            preserveDrawingBuffer: true,
+            antialias: !pick
         }
     });
 
@@ -233,7 +243,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
 
         dither: false,
 
-        vert: vertexShaderSource,
+        vert: pick ? pickVertexShaderSource : vertexShaderSource,
 
         frag: fragmentShaderSource,
 
@@ -361,9 +371,21 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
         }
     }
 
+    function readPixel(canvasX, canvasY) {
+        regl.read({
+            x: canvasX,
+            y: canvasY,
+            width: 1,
+            height: 1,
+            data: pickPixel
+        });
+        return pickPixel;
+    }
+
     return {
         setColorDomain: setColorDomain,
         render: renderGLParcoords,
+        readPixel: readPixel,
         destroy: regl.destroy
     };
 };

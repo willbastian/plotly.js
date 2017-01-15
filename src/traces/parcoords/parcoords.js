@@ -290,14 +290,14 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
             return 'translate(' + d.model.translateX + 'px,' + (d.model.translateY + translateY) + 'px)';
         });
 
-    var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoordsLineLayer')
+    var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoords-lines')
         .data(lineLayerModel, keyFun);
 
     var tweakables = {renderers: [], dimensions: []};
 
     parcoordsLineLayer.enter()
         .append('canvas')
-        .attr('class', function(d) {return 'parcoordsLineLayer ' + (d.context ? 'context' : d.pick ? 'pick' : 'focus');})
+        .attr('class', function(d) {return 'parcoords-lines ' + (d.context ? 'context' : d.pick ? 'pick' : 'focus');})
         .style('transform', 'translate(' + (-c.overdrag) + 'px, 0)')
         .style('float', 'left')
         .style('clear', 'both')
@@ -346,12 +346,12 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
         });
 
     svg.style('background', 'rgba(255, 255, 255, 0)');
-    var parcoordsControlOverlay = svg.selectAll('.parcoordsControlOverlay')
+    var parcoordsControlOverlay = svg.selectAll('.parcoords')
         .data(vm, keyFun);
 
     parcoordsControlOverlay.enter()
         .append('g')
-        .classed('parcoordsControlOverlay', true)
+        .classed('parcoords', true)
         .attr('overflow', 'visible')
         .style('position', 'absolute')
         .style('left', 0)

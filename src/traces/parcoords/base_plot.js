@@ -9,9 +9,8 @@
 'use strict';
 
 var Registry = require('../../registry');
-// var Plots = require('../../plots/plots');
-// var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
-
+var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
+// var d3 = require('d3');
 
 exports.name = 'parcoords';
 
@@ -26,40 +25,20 @@ exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout)
     oldFullLayout._glcontainer.selectAll('.parcoordsModel').remove();
 };
 
-exports.toSVG = function(/* gd */) {
+exports.toSVG = function(gd) {
 
+    var canvas = document.querySelector('.parcoords-lines');
 
-/*
-    return;
+    var rect = canvas.getBoundingClientRect();
 
-    var Parcoords = Registry.getModule('parcoords');
-    var cdParcoords = getCdModule(gd.calcdata, Parcoords);
-    if(cdParcoords.length) Parcoords.plot(gd, cdParcoords);
-
-    var fullLayout = gd._fullLayout,
-        subplotIds = Plots.getSubplotIds(fullLayout, 'parcoords');
-
-    debugger
-    for(var i = 0; i < subplotIds.length; i++) {
-        var subplot = fullLayout._plots[subplotIds[i]],
-            scene = subplot._scene2d;
-
-        var imageData = scene.toImage('png');
-        var image = fullLayout._glimages.append('svg:image');
-
-        image.attr({
-            xmlns: xmlnsNamespaces.svg,
-            'xlink:href': imageData,
-            x: 0,
-            y: 0,
-            width: '100%',
-            height: '100%',
-            preserveAspectRatio: 'none'
-        });
-
-        scene.destroy();
-    }
-*/
+    var imageData = canvas.toDataURL('image/png');
+    var image = gd._fullLayout._glimages.append('svg:image');
+    image.attr({
+        xmlns: xmlnsNamespaces.svg,
+        'xlink:href': imageData,
+        x: -rect.left,
+        y: parseFloat(window.getComputedStyle(canvas, null).getPropertyValue('padding-top')) + rect.top
+    });
 };
 
 function getCdModule(calcdata, _module) {

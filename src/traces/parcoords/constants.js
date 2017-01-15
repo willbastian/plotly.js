@@ -10,7 +10,7 @@
 
 
 module.exports = {
-    overdrag: 40,
+    overdrag: 45,
     legendWidth: 80,
     verticalPadding: 2, // otherwise, horizontal lines on top or bottom are of lower width
     tickDistance: 50,

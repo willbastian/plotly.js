@@ -10,7 +10,6 @@
 
 var Registry = require('../../registry');
 var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
-// var d3 = require('d3');
 
 exports.name = 'parcoords';
 
@@ -27,18 +26,25 @@ exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout)
 
 exports.toSVG = function(gd) {
 
-    var canvas = document.querySelector('.parcoords-lines');
+    function canvasToImage(canvas) {
+        var rect = canvas.getBoundingClientRect();
+        var compStyle = window.getComputedStyle(canvas, null);
+        var canvasContentOriginX = parseFloat(compStyle.getPropertyValue('padding-left')) + rect.left;
+        var canvasContentOriginY = parseFloat(compStyle.getPropertyValue('padding-top')) + rect.top;
 
-    var rect = canvas.getBoundingClientRect();
+        var imageData = canvas.toDataURL('image/png');
+        var image = gd._fullLayout._glimages.append('svg:image');
+        image.attr({
+            xmlns: xmlnsNamespaces.svg,
+            'xlink:href': imageData,
+            x: canvasContentOriginX,
+            y: canvasContentOriginY
+        });
+    }
 
-    var imageData = canvas.toDataURL('image/png');
-    var image = gd._fullLayout._glimages.append('svg:image');
-    image.attr({
-        xmlns: xmlnsNamespaces.svg,
-        'xlink:href': imageData,
-        x: -rect.left,
-        y: parseFloat(window.getComputedStyle(canvas, null).getPropertyValue('padding-top')) + rect.top
-    });
+    var canvases = document.querySelectorAll('.parcoords-lines.context, .parcoords-lines.focus');
+
+    canvases.forEach(canvasToImage);
 };
 
 function getCdModule(calcdata, _module) {

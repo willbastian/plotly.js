@@ -35,8 +35,7 @@ var mock0 = { // mock with zero dimensions; special case, as no dimension can be
 var mock1 = { // mock with one dimension (zero panel); special case, as no panel can be rendered
     'layout': {
         'width': 284,
-        'height': 400,
-        'paper_bgcolor': 'rgb(250, 240, 220)'
+        'height': 400
     },
     'data': [{
 
@@ -70,8 +69,7 @@ var mock1 = { // mock with one dimension (zero panel); special case, as no panel
 var mock2 = { // mock with two dimensions (one panel); special case, e.g. left and right panel is obv. the same
     'layout': {
         'width': 300,
-        'height': 300,
-        'paper_bgcolor': 'rgb(250, 240, 220)'
+        'height': 300
     },
     'data': [{
 
@@ -111,8 +109,7 @@ var mock2 = { // mock with two dimensions (one panel); special case, e.g. left a
 var mock = {
     'layout': {
         'width': 1184,
-        'height': 400,
-        'paper_bgcolor': 'rgb(250, 240, 220)'
+        'height': 400
     },
     'data': [{
 
@@ -123,8 +120,6 @@ var mock = {
 
         'type': 'parcoords',
         'line': {
-            'contextopacity': 0.0625,
-
             'showscale': true,
             'reversescale': true,
             'colorscale': 'Jet',
@@ -201,6 +196,12 @@ var mock = {
 };
 
 describe('parcoords', function() {
+
+    beforeAll(function() {
+        mock.data[0].dimensions.forEach(function(d) {
+            d.values = d.values.slice(0, 100);
+        });
+    });
 
     afterEach(destroyGraphDiv);
 
@@ -641,8 +642,6 @@ describe('parcoords', function() {
 
     describe('Lifecycle methods', function() {
 
-        afterEach(destroyGraphDiv);
-
         it('Plotly.deleteTraces with one trace removes the plot', function(done) {
 
             var gd = createGraphDiv();
@@ -655,7 +654,7 @@ describe('parcoords', function() {
                 expect(gd.data.length).toEqual(1);
 
                 Plotly.deleteTraces(gd, 0).then(function() {
-                    expect(d3.selectAll('.parcoordsModel').node()).toEqual(null);
+                    expect(d3.selectAll('.parcoords-line-layers').node()).toEqual(null);
                     expect(gd.data.length).toEqual(0);
                     done();
                 });
@@ -670,25 +669,29 @@ describe('parcoords', function() {
             mockCopy2.data[0].dimensions.splice(3, 4);
             mockCopy.data[0].line.showscale = false;
 
-            Plotly.plot(gd, mockCopy).then(function() {
-                expect(gd.data.length).toEqual(1);
-                expect(document.querySelectorAll('.panel').length).toEqual(10);
-                Plotly.plot(gd, mockCopy2).then(function() {
+            Plotly.plot(gd, mockCopy)
+                .then(function() {
+                    expect(gd.data.length).toEqual(1);
+                    expect(document.querySelectorAll('.panel').length).toEqual(10);
+                    return Plotly.plot(gd, mockCopy2);
+                })
+                .then(function() {
                     expect(gd.data.length).toEqual(2);
                     expect(document.querySelectorAll('.panel').length).toEqual(10 + 7);
-                    Plotly.deleteTraces(gd, [0]).then(function() {
-                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
-                        expect(document.querySelectorAll('.panel').length).toEqual(7);
-                        expect(gd.data.length).toEqual(1);
-                        Plotly.deleteTraces(gd, 0).then(function() {
-                            expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
-                            expect(document.querySelectorAll('.panel').length).toEqual(0);
-                            expect(gd.data.length).toEqual(0);
-                            done();
-                        });
-                    });
+                    return Plotly.deleteTraces(gd, [0]);
+                })
+                .then(function() {
+                    expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(1);
+                    expect(document.querySelectorAll('.panel').length).toEqual(7);
+                    expect(gd.data.length).toEqual(1);
+                    return Plotly.deleteTraces(gd, 0);
+                })
+                .then(function() {
+                    expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(0);
+                    expect(document.querySelectorAll('.panel').length).toEqual(0);
+                    expect(gd.data.length).toEqual(0);
+                    done();
                 });
-            });
         });
 
         describe('Having two datasets', function() {
@@ -700,23 +703,25 @@ describe('parcoords', function() {
                 var mockCopy2 = Lib.extendDeep({}, mock);
                 mockCopy2.data[0].dimensions.splice(3, 4);
 
-                expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
+                expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(0);
 
-                Plotly.plot(gd, mockCopy).then(function() {
-
-                    expect(1).toEqual(1);
-                    expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
-                    expect(gd.data.length).toEqual(1);
-
-                    Plotly.plot(gd, mockCopy2).then(function() {
+                Plotly.plot(gd, mockCopy)
+                    .then(function() {
 
                         expect(1).toEqual(1);
-                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(2);
+                        expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(1);
+                        expect(gd.data.length).toEqual(1);
+
+                        return Plotly.plot(gd, mockCopy2);
+                    })
+                    .then(function() {
+
+                        expect(1).toEqual(1);
+                        expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(2);
                         expect(gd.data.length).toEqual(2);
 
                         done();
                     });
-                });
             });
 
             it('Plotly.addTraces should add a new parcoords row', function(done) {
@@ -726,21 +731,23 @@ describe('parcoords', function() {
                 var mockCopy2 = Lib.extendDeep({}, mock);
                 mockCopy2.data[0].dimensions.splice(3, 4);
 
-                expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
+                expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(0);
 
-                Plotly.plot(gd, mockCopy).then(function() {
+                Plotly.plot(gd, mockCopy)
+                    .then(function() {
 
-                    expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
-                    expect(gd.data.length).toEqual(1);
+                        expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(1);
+                        expect(gd.data.length).toEqual(1);
 
-                    Plotly.addTraces(gd, [mockCopy2.data[0]]).then(function() {
+                        return Plotly.addTraces(gd, [mockCopy2.data[0]]);
+                    })
+                    .then(function() {
 
-                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(2);
+                        expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(2);
                         expect(gd.data.length).toEqual(2);
 
                         done();
                     });
-                });
 
             });
 
@@ -773,21 +780,23 @@ describe('parcoords', function() {
                 // wrap the `dimensions` array
                 mockCopy2.data[0].dimensions = [mockCopy2.data[0].dimensions];
 
-                expect(document.querySelectorAll('.parcoordsModel').length).toEqual(0);
+                expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(0);
 
-                Plotly.plot(gd, mockCopy).then(function() {
+                Plotly.plot(gd, mockCopy)
+                    .then(function() {
 
-                    expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
-                    expect(gd.data.length).toEqual(1);
+                        expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(1);
+                        expect(gd.data.length).toEqual(1);
 
-                    Plotly.restyle(gd, mockCopy2.data[0]).then(function() {
+                        return Plotly.restyle(gd, mockCopy2.data[0]);
+                    })
+                    .then(function() {
 
-                        expect(document.querySelectorAll('.parcoordsModel').length).toEqual(1);
+                        expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(1);
                         expect(gd.data.length).toEqual(1);
 
                         done();
                     });
-                });
 
             });
         });

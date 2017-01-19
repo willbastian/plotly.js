@@ -21,7 +21,10 @@ exports.plot = function(gd) {
 };
 
 exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout) {
-    oldFullLayout._glcontainer.selectAll('.parcoordsModel').remove();
+    oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
+    oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
+    oldFullLayout._paperdiv.selectAll('.parcoords').remove();
+    oldFullLayout._paperdiv.selectAll('.parcoords').remove();
 };
 
 exports.toSVG = function(gd) {

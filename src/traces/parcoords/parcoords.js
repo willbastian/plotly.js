@@ -277,21 +277,21 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     var vm = styledData.map(model.bind(0, layout)).map(viewModel);
 
-    var parcoordsViewModel = root.selectAll('.parcoordsViewModel')
+    var parcoordsLineLayers = root.selectAll('.parcoords-line-layers')
         .data(vm, keyFun);
 
-    parcoordsViewModel.enter()
+    parcoordsLineLayers.enter()
         .insert('div', '.' + svg.attr('class').split(' ').join(' .')) // not hardcoding .main-svg
-        .classed('parcoordsViewModel', true)
+        .classed('parcoords-line-layers', true)
         .style('box-sizing', 'content-box');
 
-    parcoordsViewModel
+    parcoordsLineLayers
         .style('transform', function(d, i) {
             var translateY = i * (d.model.height + d.model.pad.t + d.model.pad.b);
             return 'translate(' + d.model.translateX + 'px,' + (d.model.translateY + translateY) + 'px)';
         });
 
-    var parcoordsLineLayer = parcoordsViewModel.selectAll('.parcoords-lines')
+    var parcoordsLineLayer = parcoordsLineLayers.selectAll('.parcoords-lines')
         .data(lineLayerModel, keyFun);
 
     var tweakables = {renderers: [], dimensions: []};

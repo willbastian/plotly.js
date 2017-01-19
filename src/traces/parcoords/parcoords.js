@@ -275,7 +275,10 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
             .attr('stroke-width', c.bar.strokewidth);
     }
 
-    var vm = styledData.map(model.bind(0, layout)).map(viewModel);
+    var vm = styledData
+        .filter(function(d) {return !!d.dimensions && d.dimensions.length > 0;})
+        .map(model.bind(0, layout))
+        .map(viewModel);
 
     var parcoordsLineLayers = root.selectAll('.parcoords-line-layers')
         .data(vm, keyFun);

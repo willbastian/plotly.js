@@ -8,16 +8,25 @@
 
 'use strict';
 
+var Plots = require('../../plots/plots');
 var Registry = require('../../registry');
 var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
 
 exports.name = 'parcoords';
 
+exports.attr = 'parcoords';
+
+exports.idRoot = 'parcoords';
+
+exports.idRegex = /^parcoords([2-9]|[1-9][0-9]+)?$/;
+
+exports.attrRegex = /^parcoords([2-9]|[1-9][0-9]+)?$/;
+
 exports.plot = function(gd) {
     var Parcoords = Registry.getModule('parcoords');
-    var cdParcoords = getCdModule(gd.calcdata, Parcoords);
+    var calcData = Plots.getSubplotCalcData(gd.calcdata, 'parcoords', void(0));
 
-    if(cdParcoords.length) Parcoords.plot(gd, cdParcoords);
+    if(calcData.length) Parcoords.plot(gd, calcData);
 };
 
 exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout) {
@@ -49,18 +58,3 @@ exports.toSVG = function(gd) {
 
     canvases.forEach(canvasToImage);
 };
-
-function getCdModule(calcdata, _module) {
-    var cdModule = [];
-
-    for(var i = 0; i < calcdata.length; i++) {
-        var cd = calcdata[i];
-        var trace = cd[0].trace;
-
-        if((trace._module === _module) && (trace.visible === true)) {
-            cdModule.push(cd);
-        }
-    }
-
-    return cdModule;
-}

@@ -282,7 +282,8 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     parcoordsViewModel.enter()
         .insert('div', '.' + svg.attr('class').split(' ').join(' .')) // not hardcoding .main-svg
-        .classed('parcoordsViewModel', true);
+        .classed('parcoordsViewModel', true)
+        .style('box-sizing', 'content-box');
 
     parcoordsViewModel
         .style('transform', function(d, i) {
@@ -298,6 +299,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
     parcoordsLineLayer.enter()
         .append('canvas')
         .attr('class', function(d) {return 'parcoords-lines ' + (d.context ? 'context' : d.pick ? 'pick' : 'focus');})
+        .style('box-sizing', 'content-box')
         .style('transform', 'translate(' + (-c.overdrag) + 'px, 0)')
         .style('float', 'left')
         .style('clear', 'both')
@@ -353,6 +355,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
         .append('g')
         .classed('parcoords', true)
         .attr('overflow', 'visible')
+        .style('box-sizing', 'content-box')
         .style('position', 'absolute')
         .style('left', 0)
         .style('overflow', 'visible')
@@ -373,7 +376,8 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     parcoordsControlView.enter()
         .append('g')
-        .classed('parcoordsControlView', true);
+        .classed('parcoordsControlView', true)
+        .style('box-sizing', 'content-box');
 
     parcoordsControlView
         .attr('transform', function(d) {return 'translate(' + d.model.pad.l + ',' + d.model.pad.t + ')';});

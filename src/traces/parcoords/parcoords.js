@@ -301,6 +301,8 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     var tweakables = {renderers: [], dimensions: []};
 
+    var lastHovered = null;
+
     parcoordsLineLayer.enter()
         .append('canvas')
         .attr('class', function(d) {return 'parcoords-lines ' + (d.context ? 'context' : d.pick ? 'pick' : 'focus');})
@@ -324,13 +326,21 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
                     return;
                 }
                 var pixel = d.lineLayer.readPixel(x, ch - 1 - y);
-                if(pixel[3] !== 0) {
-                    callbacks.hover({
-                        x: x,
-                        y: y,
-                        dataIndex: d.model.key,
-                        curveNumber: pixel[2] + 256 * (pixel[1] + 256 * pixel[0])
-                    });
+                var found = pixel[3] !== 0;
+                var curveNumber = found ? pixel[2] + 256 * (pixel[1] + 256 * pixel[0]) : null;
+                var eventData = {
+                    x: x,
+                    y: y,
+                    dataIndex: d.model.key,
+                    curveNumber: curveNumber
+                };
+                if(curveNumber !== lastHovered) { // don't unnecessarily repeat the same hit (or miss)
+                    if(found) {
+                        callbacks.hover(eventData);
+                    } else if(callbacks.unhover) {
+                        callbacks.unhover(eventData);
+                    }
+                    lastHovered = curveNumber;
                 }
             }
         });

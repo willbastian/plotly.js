@@ -28,7 +28,10 @@ module.exports = function plot(gd, cdparcoords) {
 
     var hover = function(eventData) {
         gd.emit('plotly_hover', eventData);
-        // console.log('plotly_hover_test', eventData);
+    };
+
+    var unhover = function(eventData) {
+        gd.emit('plotly_unhover', eventData);
     };
 
     parcoords(
@@ -42,6 +45,7 @@ module.exports = function plot(gd, cdparcoords) {
         },
         {
             filterChanged: filterChanged,
-            hover: hover
+            hover: hover,
+            unhover: unhover
         });
 };

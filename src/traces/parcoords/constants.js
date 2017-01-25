@@ -16,6 +16,8 @@ module.exports = {
     tickDistance: 50,
     canvasPixelRatio: 1,
     blockLineCount: 5000,
+    scatter: false,
+    layers: ['contextLineLayer', 'focusLineLayer', 'pickLineLayer'],
     bar: {
         width: 4, // Visible width of the filter bar
         capturewidth: 10, // Mouse-sensitive width for interaction (Fitts law)

@@ -128,16 +128,18 @@ function model(layout, d, i, a) {
         canvasOverdrag: c.overdrag * c.canvasPixelRatio
     });
 
-    var rowCount = a.length;
-    var layoutWidth = layout.width * (d.domain.x[1] - d.domain.x[0]);
-    var layoutHeight = layout.height * (d.domain.y[1] - d.domain.y[0]) / rowCount;
+    var groupCount = a.length;
+    var groupWidth = layout.width * (d.domain.x[1] - d.domain.x[0]);
+    var groupHeight = layout.height * (d.domain.y[1] - d.domain.y[0]) / groupCount;
 
     var pad = d.pad || {l: 80, r: 80, t: 80, b: 80};
-    var width = layoutWidth - pad.l - pad.r - c.legendWidth; // leavig room for the colorbar
-    var height = layoutHeight - pad.t - pad.b;
+    var rowPad = pad; // for now, row padding is identical with (group) padding
+    var rowContentWidth = groupWidth - pad.l - pad.r - c.legendWidth; // leavig room for the colorbar
+    var rowHeight = groupHeight - rowPad.t - rowPad.b;
 
     return {
         key: i,
+        colCount: d.dimensions.filter(visible).length,
         _gdDimensions: d._gdDataItem.dimensions,
         _gdDimensionsOriginalOrder: d._gdDataItem.dimensions.slice(),
         dimensions: d.dimensions,
@@ -147,10 +149,10 @@ function model(layout, d, i, a) {
         translateX: (d.domain.x[0] || 0) * layout.width,
         translateY: (d.domain.y[0] || 0) * layout.height,
         pad: pad,
-        canvasWidth: width * c.canvasPixelRatio + 2 * lines.canvasOverdrag,
-        canvasHeight: height * c.canvasPixelRatio,
-        width: width,
-        height: height,
+        canvasWidth: rowContentWidth * c.canvasPixelRatio + 2 * lines.canvasOverdrag,
+        canvasHeight: rowHeight * c.canvasPixelRatio,
+        width: rowContentWidth,
+        height: rowHeight,
         canvasPixelRatio: c.canvasPixelRatio
     };
 }
@@ -162,7 +164,7 @@ function viewModel(model) {
     var dimensions = model.dimensions;
     var canvasPixelRatio = model.canvasPixelRatio;
 
-    var xScale = d3.scale.ordinal().domain(d3.range(dimensions.filter(visible).length)).rangePoints([0, width], 0);
+    var xScale = function(d) {return width * d / Math.max(1, model.colCount - 1);};
 
     var unitPad = c.verticalPadding / (height * canvasPixelRatio);
     var unitPadScale = (1 - 2 * unitPad);
@@ -176,7 +178,7 @@ function viewModel(model) {
 
     var uniqueKeys = {};
 
-    viewModel.panels = dimensions.filter(visible).map(function(dimension, i) {
+    viewModel.dimensions = dimensions.filter(visible).map(function(dimension, i) {
         var domainToUnit = domainToUnitScale(dimension);
         var foundKey = uniqueKeys[dimension.label];
         uniqueKeys[dimension.label] = (foundKey ? 0 : foundKey) + 1;
@@ -187,9 +189,9 @@ function viewModel(model) {
             tickvals: dimension.tickvals || false,
             ticktext: dimension.ticktext || false,
             ordinal: !!dimension.tickvals,
-            scatter: dimension.scatter,
+            scatter: c.scatter || dimension.scatter,
             xIndex: i,
-            originalXIndex: i,
+            crossfilterDimensionIndex: i,
             height: height,
             values: dimension.values,
             paddedUnitValues: dimension.values.map(domainToUnit).map(paddedUnitScale),
@@ -210,7 +212,7 @@ function viewModel(model) {
 }
 
 function lineLayerModel(vm) {
-    return ['contextLineLayer', 'focusLineLayer', 'pickLineLayer'].map(function(key) {
+    return c.layers.map(function(key) {
         return {
             key: key,
             context: key === 'contextLineLayer',
@@ -342,13 +344,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
         .attr('height', function(d) {return d.viewModel.model.canvasHeight;})
         .style('width', function(d) {return (d.viewModel.model.width + 2 * c.overdrag) + 'px';})
         .style('height', function(d) {return d.viewModel.model.height + 'px';})
-        .style('opacity', function(d) {return d.pick ? 0.01 : 1;})
-        .each(function(d) {
-            d.lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.panels, d.model.unitToColor, d.context, d.pick);
-            d.viewModel[d.key] = d.lineLayer;
-            tweakables.renderers.push(function() {d.lineLayer.render(d.viewModel.panels, true);});
-            d.lineLayer.render(d.viewModel.panels, !d.context, d.context && !someFiltersActive(d.viewModel));
-        });
+        .style('opacity', function(d) {return d.pick ? 0.01 : 1;});
 
     svg.style('background', 'rgba(255, 255, 255, 0)');
     var parcoordsControlOverlay = svg.selectAll('.parcoords')
@@ -385,46 +381,109 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
     parcoordsControlView
         .attr('transform', function(d) {return 'translate(' + d.model.pad.l + ',' + d.model.pad.t + ')';});
 
-    var panel = parcoordsControlView.selectAll('.panel')
-        .data(function(vm) {return vm.panels;}, keyFun);
+    var yAxis = parcoordsControlView.selectAll('.yAxis')
+        .data(function(vm) {return vm.dimensions;}, keyFun);
 
     function someFiltersActive(view) {
-        return view.panels.some(function(p) {return p.filter[0] !== 0 || p.filter[1] !== 1;});
+        return view.dimensions.some(function(p) {return p.filter[0] !== 0 || p.filter[1] !== 1;});
     }
 
-    panel.enter()
+    function updatePanelLayoutParcoords(yAxis, vm) {
+        var panels = vm.panels || (vm.panels = []);
+        var yAxes = yAxis.each(function(d) {return d;})[0].map(function(e) {return e.__data__;});
+        var panelCount = yAxes.length - 1;
+        var rowCount = 1;
+        for(var row = 0; row < rowCount; row++) {
+            for(var p = 0; p < panelCount; p++) {
+                var panel = panels[p + row * panelCount] || (panels[p + row * panelCount] = {});
+                var dim1 = yAxes[p];
+                var dim2 = yAxes[p + 1];
+                panel.dim1 = dim1;
+                panel.dim2 = dim2;
+                panel.canvasX = dim1.canvasX;
+                panel.panelSizeX = dim2.canvasX - dim1.canvasX;
+                panel.panelSizeY = vm.model.canvasHeight / rowCount;
+                panel.y = row * panel.panelSizeY;
+                panel.canvasY = vm.model.canvasHeight - panel.y - panel.panelSizeY;
+            }
+        }
+    }
+
+    function updatePanelLayoutScatter(yAxis, vm) {
+        var panels = vm.panels || (vm.panels = []);
+        var yAxes = yAxis.each(function(d) {return d;})[0].map(function(e) {return e.__data__;});
+        var panelCount = yAxes.length - 1;
+        var rowCount = panelCount;
+        for(var row = 0; row < panelCount; row++) {
+            for(var p = 0; p < panelCount; p++) {
+                var panel = panels[p + row * panelCount] || (panels[p + row * panelCount] = {});
+                var dim1 = yAxes[p];
+                var dim2 = yAxes[p + 1];
+                panel.dim1 = yAxes[row + 1];
+                panel.dim2 = dim2;
+                panel.canvasX = dim1.canvasX;
+                panel.panelSizeX = dim2.canvasX - dim1.canvasX;
+                panel.panelSizeY = vm.model.canvasHeight / rowCount;
+                panel.y = row * panel.panelSizeY;
+                panel.canvasY = vm.model.canvasHeight - panel.y - panel.panelSizeY;
+            }
+        }
+    }
+
+    function updatePanelLayout(yAxis, vm) {
+        return (c.scatter ? updatePanelLayoutScatter : updatePanelLayoutParcoords)(yAxis, vm);
+    }
+
+    yAxis.enter()
         .append('g')
-        .classed('panel', true)
+        .classed('yAxis', true)
         .each(function(d) {tweakables.dimensions.push(d);});
 
-    panel
+    parcoordsControlView.each(function(vm) {
+        updatePanelLayout(yAxis, vm);
+    });
+
+    parcoordsLineLayer
+        .each(function(d) {
+            d.lineLayer = lineLayerMaker(this, d.model.lines, d.model.canvasWidth, d.model.canvasHeight, d.viewModel.dimensions, d.viewModel.panels, d.model.unitToColor, d.context, d.pick, c.scatter);
+            d.viewModel[d.key] = d.lineLayer;
+            tweakables.renderers.push(function() {d.lineLayer.render(d.viewModel.panels, true);});
+            d.lineLayer.render(d.viewModel.panels, !d.context, d.context && !someFiltersActive(d.viewModel));
+        });
+
+    yAxis
         .attr('transform', function(d) {return 'translate(' + d.xScale(d.xIndex) + ', 0)';});
 
-    panel
+    yAxis
         .call(d3.behavior.drag()
             .origin(function(d) {return d;})
             .on('drag', function(d) {
+                var p = d.parent;
                 linePickActive = false;
                 if(domainBrushing) {
                     return;
                 }
                 d.x = Math.max(-c.overdrag, Math.min(d.model.width + c.overdrag, d3.event.x));
                 d.canvasX = d.x * d.model.canvasPixelRatio;
-                panel
+                yAxis
                     .sort(function(a, b) {return a.x - b.x;})
                     .each(function(dd, i) {
                         dd.xIndex = i;
                         dd.x = d === dd ? dd.x : dd.xScale(dd.xIndex);
                         dd.canvasX = dd.x * dd.model.canvasPixelRatio;
                     });
-                panel.filter(function(dd) {return Math.abs(d.xIndex - dd.xIndex) !== 0;})
+
+                updatePanelLayout(yAxis, p);
+
+                yAxis.filter(function(dd) {return Math.abs(d.xIndex - dd.xIndex) !== 0;})
                     .attr('transform', function(d) {return 'translate(' + d.xScale(d.xIndex) + ', 0)';});
                 d3.select(this).attr('transform', 'translate(' + d.x + ', 0)');
-                panel.each(function(d, i) {d.parent.panels[i] = d;});
-                d.parent.contextLineLayer.render(d.parent.panels, false, !someFiltersActive(d.parent));
-                d.parent.focusLineLayer.render(d.parent.panels);
+                yAxis.each(function(d, i) {p.dimensions[i] = d;});
+                p.contextLineLayer && p.contextLineLayer.render(p.panels, false, !someFiltersActive(p));
+                p.focusLineLayer.render && p.focusLineLayer.render(p.panels);
             })
             .on('dragend', function(d) {
+                var p = d.parent;
                 if(domainBrushing) {
                     if(domainBrushing === 'ending') {
                         domainBrushing = false;
@@ -433,21 +492,22 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
                 }
                 d.x = d.xScale(d.xIndex);
                 d.canvasX = d.x * d.model.canvasPixelRatio;
+                updatePanelLayout(yAxis, p);
                 d3.select(this)
                     .attr('transform', function(d) {return 'translate(' + d.x + ', 0)';});
-                d.parent.contextLineLayer.render(d.parent.panels, false, !someFiltersActive(d.parent));
-                d.parent.focusLineLayer.render(d.parent.panels);
-                d.parent.pickLineLayer.render(d.parent.panels, true);
+                p.contextLineLayer && p.contextLineLayer.render(p.panels, false, !someFiltersActive(p));
+                p.focusLineLayer && p.focusLineLayer.render(p.panels);
+                p.pickLineLayer && p.pickLineLayer.render(p.panels, true);
                 linePickActive = true;
 
                 // Have updated order data on `gd.data` and raise `Plotly.restyle` event
                 // without having to incur heavy UI blocking due to an actual `Plotly.restyle` call
 
-                var orig = d.parent.model._gdDimensionsOriginalOrder
+                var orig = p.model._gdDimensionsOriginalOrder
                     .filter(function(d) {return d.visible === void(0) || d.visible;});
                 function newIdx(dim) {
                     var origIndex = orig.indexOf(dim);
-                    var currentIndex = d.parent.panels.map(function(dd) {return dd.originalXIndex;}).indexOf(origIndex);
+                    var currentIndex = p.dimensions.map(function(dd) {return dd.crossfilterDimensionIndex;}).indexOf(origIndex);
                     if(currentIndex === -1) {
                         // invisible dimensions go to the end, retaining their original order
                         currentIndex += orig.length;
@@ -463,10 +523,10 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
             })
         );
 
-    panel.exit()
+    yAxis.exit()
         .remove();
 
-    var axisOverlays = panel.selectAll('.axisOverlays')
+    var axisOverlays = yAxis.selectAll('.axisOverlays')
         .data(repeat, keyFun);
 
     axisOverlays.enter()
@@ -654,9 +714,10 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     function axisBrushMoved(dimension) {
         linePickActive = false;
+        var p = dimension.parent;
         var extent = dimension.brush.extent();
-        var panels = dimension.parent.panels;
-        var filter = panels[dimension.xIndex].filter;
+        var dimensions = p.dimensions;
+        var filter = dimensions[dimension.xIndex].filter;
         var reset = justStarted && (extent[0] === extent[1]);
         if(reset) {
             dimension.brush.clear();
@@ -664,14 +725,14 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
         }
         var newExtent = reset ? [0, 1] : extent.slice();
         if(newExtent[0] !== filter[0] || newExtent[1] !== filter[1]) {
-            panels[dimension.xIndex].filter = newExtent;
-            dimension.parent.focusLineLayer.render(panels, true);
-            var filtersActive = someFiltersActive(dimension.parent);
+            dimensions[dimension.xIndex].filter = newExtent;
+            p.focusLineLayer && p.focusLineLayer.render(p.panels, true);
+            var filtersActive = someFiltersActive(p);
             if(!contextShown && filtersActive) {
-                dimension.parent.contextLineLayer.render(panels, true);
+                p.contextLineLayer && p.contextLineLayer.render(p.panels, true);
                 contextShown = true;
             } else if(contextShown && !filtersActive) {
-                dimension.parent.contextLineLayer.render(panels, true, true);
+                p.contextLineLayer && p.contextLineLayer.render(p.panels, true, true);
                 contextShown = false;
             }
         }
@@ -679,10 +740,11 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
     }
 
     function axisBrushEnded(dimension) {
+        var p = dimension.parent;
         var extent = dimension.brush.extent();
         var empty = extent[0] === extent[1];
-        var panels = dimension.parent.panels;
-        var f = panels[dimension.xIndex].filter;
+        var dimensions = p.dimensions;
+        var f = dimensions[dimension.xIndex].filter;
         if(!empty && dimension.ordinal) {
             f[0] = ordinalScaleSnap(dimension.ordinalScale, f[0]);
             f[1] = ordinalScaleSnap(dimension.ordinalScale, f[1]);
@@ -691,16 +753,16 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
                 f[1] = Math.min(1, f[1] + 0.05);
             }
             d3.select(this).transition().duration(150).call(dimension.brush.extent(f));
-            dimension.parent.focusLineLayer.render(panels, true);
+            p.focusLineLayer.render(p.panels, true);
         }
-        dimension.parent.pickLineLayer.render(panels, true);
+        p.pickLineLayer && p.pickLineLayer.render(p.panels, true);
         linePickActive = true;
         domainBrushing = 'ending';
         if(callbacks && callbacks.filterChanged) {
             var invScale = dimension.domainToUnitScale.invert;
 
             // update gd.data as if a Plotly.restyle were fired
-            var gdDimension = dimension.parent.model._gdDimensionsOriginalOrder[dimension.originalXIndex];
+            var gdDimension = p.model._gdDimensionsOriginalOrder[dimension.crossfilterDimensionIndex];
             var gdConstraintRange = gdDimension.constraintrange;
             if(!gdConstraintRange || gdConstraintRange.length !== 2) {
                 gdConstraintRange = gdDimension.constraintrange = [];

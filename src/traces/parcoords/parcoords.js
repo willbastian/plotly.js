@@ -400,7 +400,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     function updatePanelLayoutParcoords(yAxis, vm) {
         var panels = vm.panels || (vm.panels = []);
-        var yAxes = yAxis.each(function(d) {return d;})[0].map(function(e) {return e.__data__;});
+        var yAxes = yAxis.each(function(d) {return d;})[vm.key].map(function(e) {return e.__data__;});
         var panelCount = yAxes.length - 1;
         var rowCount = 1;
         for(var row = 0; row < rowCount; row++) {
@@ -421,7 +421,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     function updatePanelLayoutScatter(yAxis, vm) {
         var panels = vm.panels || (vm.panels = []);
-        var yAxes = yAxis.each(function(d) {return d;})[0].map(function(e) {return e.__data__;});
+        var yAxes = yAxis.each(function(d) {return d;})[vm.key].map(function(e) {return e.__data__;});
         var panelCount = yAxes.length - 1;
         var rowCount = panelCount;
         for(var row = 0; row < panelCount; row++) {
@@ -488,7 +488,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
                 yAxis.filter(function(dd) {return Math.abs(d.xIndex - dd.xIndex) !== 0;})
                     .attr('transform', function(d) {return 'translate(' + d.xScale(d.xIndex) + ', 0)';});
                 d3.select(this).attr('transform', 'translate(' + d.x + ', 0)');
-                yAxis.each(function(d, i) {p.dimensions[i] = d;});
+                yAxis.each(function(dd, i, ii) {if(ii === d.parent.key) p.dimensions[i] = dd;});
                 p.contextLineLayer && p.contextLineLayer.render(p.panels, false, !someFiltersActive(p));
                 p.focusLineLayer.render && p.focusLineLayer.render(p.panels);
             })

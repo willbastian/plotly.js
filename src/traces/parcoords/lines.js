@@ -171,7 +171,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
     var initialDims = initialDimensions.slice();
 
     var dimensionCount = initialDims.length;
-    var sampleCount = initialDims.reduce(function(p, n) {return Math.min(p, n.values.length);}, initialDims[0].values.length);
+    var sampleCount = initialDims[0] ? initialDims[0].values.length : 0;
 
     var focusAlphaBlending = context;
 

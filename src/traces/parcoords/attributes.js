@@ -10,6 +10,7 @@
 
 var colorAttributes = require('../../components/colorscale/color_attributes');
 var colorbarAttrs = require('../../components/colorbar/attributes');
+var colorscales = require('../../components/colorscale/scales');
 var axesAttrs = require('../../plots/cartesian/layout_attributes');
 var padAttrs = require('../../plots/pad_attributes');
 
@@ -96,7 +97,24 @@ module.exports = {
 
     line: extendFlat({},
 
-        colorAttributes('line'),
+        // the default autocolorscale isn't quite optimal for parcoords
+        extendDeep(
+            {},
+            colorAttributes('line'),
+            {
+                colorscale: extendDeep(
+                    {},
+                    colorAttributes('line').colorscale,
+                    {dflt: colorscales.Viridis}
+                ),
+                autocolorscale: extendDeep(
+                    {},
+                    colorAttributes('line').autocolorscale,
+                    {dflt: false}
+                )
+
+            }
+        ),
 
         {
             showscale: {

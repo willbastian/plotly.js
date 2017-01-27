@@ -305,7 +305,7 @@ describe('parcoords', function() {
 
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(2);
-                expect(document.querySelectorAll('.axis').length).toEqual(2);
+                expect(document.querySelectorAll('.axis').length).toEqual(0);
                 expect(gd.data[0].dimensions[0].values.length).toEqual(0);
                 done();
             });
@@ -339,44 +339,13 @@ describe('parcoords', function() {
             });
         });
 
-        it('Non-finite `range` elements', function(done) {
-
-            var mockCopy = Lib.extendDeep({}, mock2);
-            var dim, i, j;
-
-            mockCopy.layout.width = 320;
-            mockCopy.data[0].dimensions[0].range = [-Infinity, 1];
-            mockCopy.data[0].dimensions[1].range = [void(0), 2];
-            mockCopy.data[0].dimensions[0].constraintrange = [NaN, 0.5];
-            mockCopy.data[0].dimensions[1].constraintrange = [null, 0.3];
-
-            for(i = 0; i < mockCopy.data[0].dimensions.length; i++) {
-                dim = mockCopy.data[0].dimensions[i];
-                dim.values = [];
-                for(j = 0; j < 100; j++) {
-                    dim.values[j] = Math.random();
-                }
-            }
-
-            var gd = createGraphDiv();
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
-
-                expect(gd.data.length).toEqual(1);
-                expect(gd.data[0].dimensions.length).toEqual(2);
-                expect(document.querySelectorAll('.axis').length).toEqual(2);
-                expect(gd.data[0].dimensions[0].values.length).toEqual(100);
-                done();
-            });
-        });
-
-        it('Works with 60 dimensions; also, use default color', function(done) {
+        it('Works with 60 dimensions', function(done) {
 
             var mockCopy = Lib.extendDeep({}, mock1);
             var newDimension, i, j;
 
             mockCopy.layout.width = 1680;
             mockCopy.data[0].dimensions = [];
-            delete mockCopy.data[0].line;
             for(i = 0; i < 60; i++) {
                 newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
                 newDimension.id = 'S' + i;
@@ -464,7 +433,6 @@ describe('parcoords', function() {
 
             mockCopy.layout.width = 680;
             mockCopy.data[0].dimensions = [];
-            delete mockCopy.data[0].line;
             for(i = 0; i < 5; i++) {
                 newDimension = Lib.extendDeep({}, mock1.data[0].dimensions[0]);
                 newDimension.id = 'S' + i;

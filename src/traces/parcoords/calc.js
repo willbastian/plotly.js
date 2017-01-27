@@ -10,7 +10,6 @@
 
 var hasColorscale = require('../../components/colorscale/has_colorscale');
 var calcColorscale = require('../../components/colorscale/calc');
-var isNumeric = require('fast-isnumeric');
 
 function colorScale(trace) {
     if(hasColorscale(trace, 'line')) {
@@ -18,31 +17,19 @@ function colorScale(trace) {
     }
 }
 
-function finite(x) {
-    return isNaN(x) || !isFinite(x) ? 0 : x;
-}
-
 module.exports = function calc(gd, trace) {
-    var vals = trace.dimensions,
-        cd = [],
-        i,
-        v;
-    for(i = 0; i < vals.length; i++) {
-        v = vals.length - i;
-        if(!isNumeric(v)) continue;
-        v = +v;
-        if(v < 0) continue;
+    var inputDimensions = trace.dimensions,
+        dimensions = [];
+    for(var i = 0; i < inputDimensions.length; i++) {
 
-        cd.push({
-            v: v,
-            i: i,
-            range: vals[i].range && vals[i].range.map(finite),
-            constraintrange: vals[i].constraintrange && vals[i].constraintrange.map(finite),
-            tickvals: vals[i].tickvals,
-            ticktext: vals[i].ticktext,
-            visible: vals[i].visible,
-            label: vals[i].label,
-            values: vals[i].values
+        dimensions.push({
+            range: inputDimensions[i].range,
+            constraintrange: inputDimensions[i].constraintrange,
+            tickvals: inputDimensions[i].tickvals,
+            ticktext: inputDimensions[i].ticktext,
+            visible: inputDimensions[i].visible,
+            label: inputDimensions[i].label,
+            values: inputDimensions[i].values
         });
     }
 
@@ -57,7 +44,7 @@ module.exports = function calc(gd, trace) {
 
     return [{
         domain: trace.domain,
-        dimensions: cd,
+        dimensions: dimensions,
         line: trace.line,
         pad: trace.pad
     }];

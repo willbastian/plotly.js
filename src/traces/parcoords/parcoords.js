@@ -134,7 +134,7 @@ function model(layout, d, i, a) {
 
     var pad = d.pad || {l: 80, r: 80, t: 80, b: 80};
     var rowPad = pad; // for now, row padding is identical with (group) padding
-    var rowContentWidth = groupWidth - pad.l - pad.r - c.legendWidth; // leavig room for the colorbar
+    var rowContentWidth = groupWidth - pad.l - pad.r - (d.line.showscale ? c.legendWidth : 0); // leavig room for the colorbar
     var rowHeight = groupHeight - rowPad.t - rowPad.b;
 
     return {

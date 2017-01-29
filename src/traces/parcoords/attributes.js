@@ -97,7 +97,8 @@ module.exports = {
 
     line: extendFlat({},
 
-        // the default autocolorscale isn't quite optimal for parcoords
+        // the default autocolorscale isn't quite usable for parcoords due to context ambiguity around 0 (grey, off-white)
+        // autocolorscale therefore defaults to false too, to avoid being overridden by the  blue-white-red autocolor palette
         extendDeep(
             {},
             colorAttributes('line'),

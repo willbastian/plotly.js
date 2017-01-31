@@ -40,21 +40,37 @@ exports.toSVG = function(gd) {
 
     function canvasToImage(canvas) {
         var rect = canvas.getBoundingClientRect();
-        var compStyle = window.getComputedStyle(canvas, null);
-        var canvasContentOriginX = parseFloat(compStyle.getPropertyValue('padding-left')) + rect.left;
-        var canvasContentOriginY = parseFloat(compStyle.getPropertyValue('padding-top')) + rect.top;
+        var bodyStyle = window.getComputedStyle(document.body, null);
+        var canvasStyle = window.getComputedStyle(canvas, null);
+        var canvasContentOriginX = parseFloat(canvasStyle.getPropertyValue('padding-left')) + rect.left;
+        var canvasContentOriginY = parseFloat(canvasStyle.getPropertyValue('padding-top')) + rect.top;
 
         var imageData = canvas.toDataURL('image/png');
         var image = gd._fullLayout._glimages.append('svg:image');
+
         image.attr({
             xmlns: xmlnsNamespaces.svg,
             'xlink:href': imageData,
-            x: canvasContentOriginX,
-            y: canvasContentOriginY
+            x: canvasContentOriginX - parseFloat(bodyStyle.getPropertyValue('margin-left')),
+            y: canvasContentOriginY - parseFloat(bodyStyle.getPropertyValue('margin-top')),
+            width: parseFloat(canvasStyle.getPropertyValue('width')),
+            height: parseFloat(canvasStyle.getPropertyValue('height'))
         });
     }
 
-    var canvases = document.querySelectorAll('.parcoords-lines.context, .parcoords-lines.focus');
+    var canvases = Array.prototype.slice.call(document.querySelectorAll('.parcoords-lines.context, .parcoords-lines.focus'));
+
+/*
+    var svgs = Array.prototype.slice.call(document.querySelectorAll('.main-svg'));
+    document.querySelectorAll('.axisTitle')[0].setAttribute('text-anchor', 'begin');
+    document.querySelectorAll('.axisTitle')[0].style['font-size'] = '16px';
+    document.querySelectorAll('.axisTitle')[0].innerHTML = svgs.length;
+    svgs.forEach(function(s) {
+        //s.style.opacity = 0.1;
+        //s.style.display = 'none'
+        //s.parentElement.removeChild(s)
+    })
+*/
 
     canvases.forEach(canvasToImage);
 };

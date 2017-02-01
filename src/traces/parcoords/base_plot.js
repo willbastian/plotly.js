@@ -67,5 +67,6 @@ exports.toSVG = function(gd) {
         });
     }
 
+    imageRoot.selectAll('*').remove();
     canvases.each(canvasToImage);
 };

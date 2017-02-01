@@ -8,6 +8,7 @@
 
 'use strict';
 
+var d3 = require('d3');
 var Plots = require('../../plots/plots');
 var Registry = require('../../registry');
 var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
@@ -34,43 +35,37 @@ exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout)
     oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
     oldFullLayout._paperdiv.selectAll('.parcoords').remove();
     oldFullLayout._paperdiv.selectAll('.parcoords').remove();
+    oldFullLayout._glimages.selectAll('*').remove();
 };
 
 exports.toSVG = function(gd) {
 
-    function canvasToImage(canvas) {
+    var bodyStyle = window.getComputedStyle(document.body, null);
+    var imageRoot = gd._fullLayout._glimages;
+    var root = d3.selectAll('.svg-container');
+    var canvases = root.filter(function(d, i) {return i === 0;})
+        .selectAll('.parcoords-lines.context, .parcoords-lines.focus');
+    var snapshot = root[0].length > 1;
+
+    function canvasToImage() {
+        var canvas = this;
         var rect = canvas.getBoundingClientRect();
-        var bodyStyle = window.getComputedStyle(document.body, null);
         var canvasStyle = window.getComputedStyle(canvas, null);
         var canvasContentOriginX = parseFloat(canvasStyle.getPropertyValue('padding-left')) + rect.left;
         var canvasContentOriginY = parseFloat(canvasStyle.getPropertyValue('padding-top')) + rect.top;
-
         var imageData = canvas.toDataURL('image/png');
-        var image = gd._fullLayout._glimages.append('svg:image');
+        var image = imageRoot.append('svg:image');
 
         image.attr({
             xmlns: xmlnsNamespaces.svg,
             'xlink:href': imageData,
-            x: canvasContentOriginX - parseFloat(bodyStyle.getPropertyValue('margin-left')),
-            y: canvasContentOriginY - parseFloat(bodyStyle.getPropertyValue('margin-top')),
+            x: canvasContentOriginX - (snapshot ? 0 : parseFloat(bodyStyle.getPropertyValue('margin-left'))),
+            y: canvasContentOriginY - (snapshot ? 0 : parseFloat(bodyStyle.getPropertyValue('margin-top'))),
             width: parseFloat(canvasStyle.getPropertyValue('width')),
-            height: parseFloat(canvasStyle.getPropertyValue('height'))
+            height: parseFloat(canvasStyle.getPropertyValue('height')),
+            preserveAspectRatio: 'none'
         });
     }
 
-    var canvases = Array.prototype.slice.call(document.querySelectorAll('.parcoords-lines.context, .parcoords-lines.focus'));
-
-/*
-    var svgs = Array.prototype.slice.call(document.querySelectorAll('.main-svg'));
-    document.querySelectorAll('.axisTitle')[0].setAttribute('text-anchor', 'begin');
-    document.querySelectorAll('.axisTitle')[0].style['font-size'] = '16px';
-    document.querySelectorAll('.axisTitle')[0].innerHTML = svgs.length;
-    svgs.forEach(function(s) {
-        //s.style.opacity = 0.1;
-        //s.style.display = 'none'
-        //s.parentElement.removeChild(s)
-    })
-*/
-
-    canvases.forEach(canvasToImage);
+    canvases.each(canvasToImage);
 };

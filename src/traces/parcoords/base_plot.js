@@ -8,6 +8,7 @@
 
 'use strict';
 
+var d3 = require('d3');
 var Plots = require('../../plots/plots');
 var Registry = require('../../registry');
 var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
@@ -34,27 +35,37 @@ exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout)
     oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
     oldFullLayout._paperdiv.selectAll('.parcoords').remove();
     oldFullLayout._paperdiv.selectAll('.parcoords').remove();
+    oldFullLayout._glimages.selectAll('*').remove();
 };
 
 exports.toSVG = function(gd) {
 
-    function canvasToImage(canvas) {
-        var rect = canvas.getBoundingClientRect();
-        var compStyle = window.getComputedStyle(canvas, null);
-        var canvasContentOriginX = parseFloat(compStyle.getPropertyValue('padding-left')) + rect.left;
-        var canvasContentOriginY = parseFloat(compStyle.getPropertyValue('padding-top')) + rect.top;
+    var bodyStyle = window.getComputedStyle(document.body, null);
+    var imageRoot = gd._fullLayout._glimages;
+    var root = d3.selectAll('.svg-container');
+    var canvases = root.filter(function(d, i) {return i === 0;})
+        .selectAll('.parcoords-lines.context, .parcoords-lines.focus');
+    var snapshot = root[0].length > 1;
 
+    function canvasToImage() {
+        var canvas = this;
+        var rect = canvas.getBoundingClientRect();
+        var canvasStyle = window.getComputedStyle(canvas, null);
+        var canvasContentOriginX = parseFloat(canvasStyle.getPropertyValue('padding-left')) + rect.left;
+        var canvasContentOriginY = parseFloat(canvasStyle.getPropertyValue('padding-top')) + rect.top;
         var imageData = canvas.toDataURL('image/png');
-        var image = gd._fullLayout._glimages.append('svg:image');
+        var image = imageRoot.append('svg:image');
+
         image.attr({
             xmlns: xmlnsNamespaces.svg,
             'xlink:href': imageData,
-            x: canvasContentOriginX,
-            y: canvasContentOriginY
+            x: canvasContentOriginX - (snapshot ? 0 : parseFloat(bodyStyle.getPropertyValue('margin-left'))),
+            y: canvasContentOriginY - (snapshot ? 0 : parseFloat(bodyStyle.getPropertyValue('margin-top'))),
+            width: parseFloat(canvasStyle.getPropertyValue('width')),
+            height: parseFloat(canvasStyle.getPropertyValue('height')),
+            preserveAspectRatio: 'none'
         });
     }
 
-    var canvases = document.querySelectorAll('.parcoords-lines.context, .parcoords-lines.focus');
-
-    canvases.forEach(canvasToImage);
+    canvases.each(canvasToImage);
 };

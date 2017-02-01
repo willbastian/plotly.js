@@ -229,7 +229,7 @@ function styleExtentTexts(selection) {
         .attr('text-anchor', 'middle')
         .style('font-family', 'monospace')
         .style('font-weight', 100)
-        .style('font-size', 'x-small')
+        .style('font-size', '10px')
         .style('cursor', 'default')
         .style('user-select', 'none');
 }
@@ -580,7 +580,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
         .selectAll('text')
         .style('font-family', 'monospace')
         .style('font-weight', 100)
-        .style('font-size', 'x-small')
+        .style('font-size', '10px')
         .style('fill', 'black')
         .style('fill-opacity', 1)
         .style('stroke', 'none')
@@ -603,7 +603,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
         .classed('axisTitle', true)
         .attr('text-anchor', 'middle')
         .style('font-family', 'sans-serif')
-        .style('font-size', 'xx-small')
+        .style('font-size', '10px')
         .style('cursor', 'default')
         .style('user-select', 'none')
         .style('pointer-events', 'auto');

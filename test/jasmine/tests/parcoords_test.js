@@ -706,7 +706,7 @@ describe('parcoords', function() {
 
         });
 
-        it('Calling `Plotly.restyle` should amend the preexisting parcoords', function(done) {
+        it('Calling `Plotly.restyle` with a string path should amend the preexisting parcoords', function(done) {
 
             expect(gd.data.length).toEqual(1);
 
@@ -726,7 +726,7 @@ describe('parcoords', function() {
 
         });
 
-        it('Calling `Plotly.restyle` should amend the preexisting parcoords', function(done) {
+        it('Calling `Plotly.restyle` with an object should amend the preexisting parcoords', function(done) {
 
             var newStyle = Lib.extendDeep({}, mockCopy.data[0].line);
             newStyle.colorscale = 'Viridis';
@@ -747,6 +747,31 @@ describe('parcoords', function() {
                 done();
             });
 
+
+        });
+
+        it('Calling `Plotly.restyle` should emit a restyle event', function(done) {
+
+            var tester = (function() {
+
+                var eventCalled = false;
+
+                return {
+                    set: function(d) {eventCalled = d;},
+                    get: function() {return eventCalled;}
+                };
+            })();
+
+            gd.on('plotly_restyle', function() {
+                tester.set(true);
+            });
+
+            expect(tester.get()).toBe(false);
+            Plotly.restyle(gd, 'line.colorscale', 'Viridis')
+                .then(window.setTimeout(function() {
+                    expect(tester.get()).toBe(true);
+                    done();
+                }, 0));
 
         });
 

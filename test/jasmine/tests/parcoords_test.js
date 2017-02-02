@@ -8,7 +8,7 @@ var attributes = require('@src/traces/parcoords/attributes');
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
 var hasWebGLSupport = require('../assets/has_webgl_support');
-
+var mouseEvent = require('../assets/mouse_event');
 
 var mock0 = { // mock with zero dimensions; special case, as no dimension can be rendered
     'layout': {
@@ -750,7 +750,7 @@ describe('parcoords', function() {
 
         });
 
-        it('Calling `Plotly.restyle` should emit a restyle event', function(done) {
+        it('Should emit a \'plotly_restyle\' event', function(done) {
 
             var tester = (function() {
 
@@ -772,6 +772,34 @@ describe('parcoords', function() {
                     expect(tester.get()).toBe(true);
                     done();
                 }, 0));
+
+        });
+
+        it('Should emit a \'plotly_hover\' event', function(done) {
+
+            var tester = (function() {
+
+                var eventCalled = false;
+
+                return {
+                    set: function(d) {eventCalled = d;},
+                    get: function() {return eventCalled;}
+                };
+            })();
+
+            gd.on('plotly_hover', function(d) {
+                tester.set(d);
+            });
+
+            expect(tester.get()).toBe(false);
+
+            mouseEvent('mousemove', 101, 181);
+            mouseEvent('mouseover', 101, 181);
+
+            window.setTimeout(function() {
+                expect(tester.get().curveNumber).toBe(36);
+                done();
+            }, 0);
 
         });
 

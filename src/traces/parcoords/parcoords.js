@@ -604,7 +604,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
         .attr('text-anchor', 'middle')
         .style('font-family', 'sans-serif')
         .style('font-size', '10px')
-        .style('cursor', 'default')
+        .style('cursor', 'ew-resize')
         .style('user-select', 'none')
         .style('pointer-events', 'auto');
 
@@ -697,6 +697,7 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
     axisBrushEnter
         .selectAll('rect.extent')
         .attr('fill', 'url(#filterBarPattern)')
+        .style('cursor', 'ns-resize')
         .filter(function(d) {return d.filter[0] === 0 && d.filter[1] === 1;})
         .attr('y', -100); //  // zero-size rectangle pointer issue workaround
 
@@ -708,10 +709,12 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
 
     axisBrushEnter
         .selectAll('.resize.n rect')
+        .style('cursor', 'n-resize')
         .attr('y', c.bar.handleoverlap - c.bar.handleheight);
 
     axisBrushEnter
         .selectAll('.resize.s rect')
+        .style('cursor', 's-resize')
         .attr('y', c.bar.handleoverlap);
 
     var justStarted = false;

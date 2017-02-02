@@ -788,7 +788,11 @@ describe('parcoords', function() {
             })();
 
             gd.on('plotly_hover', function(d) {
-                tester.set(d);
+                tester.set({hover: d});
+            });
+
+            gd.on('plotly_unhover', function(d) {
+                tester.set({unhover: d});
             });
 
             expect(tester.get()).toBe(false);
@@ -797,8 +801,18 @@ describe('parcoords', function() {
             mouseEvent('mouseover', 101, 181);
 
             window.setTimeout(function() {
-                expect(tester.get().curveNumber).toBe(36);
-                done();
+
+                expect(tester.get().hover.curveNumber).toBe(36);
+
+                mouseEvent('mousemove', 100, 100);
+                mouseEvent('mouseover', 100, 100);
+
+                window.setTimeout(function() {
+
+                    expect(tester.get().unhover.curveNumber).toBe(null);
+                    done();
+                }, 0);
+
             }, 0);
 
         });

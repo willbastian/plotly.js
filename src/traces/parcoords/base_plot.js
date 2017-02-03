@@ -69,4 +69,13 @@ exports.toSVG = function(gd) {
 
     imageRoot.selectAll('*').remove();
     canvases.each(canvasToImage);
+
+    // Chrome / Safari bug workaround - browser apparently loses connection to the defined pattern
+    // Without the workaround, these browsers 'lose' the filter brush styling (color etc.) after a snapshot
+    // on a subsequent interaction.
+    // Firefox works fine without this workaround
+    window.setTimeout(function() {
+        d3.selectAll('#filterBarPattern')
+            .attr('id', 'filterBarPattern');
+    }, 0);
 };

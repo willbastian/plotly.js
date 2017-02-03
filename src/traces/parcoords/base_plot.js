@@ -40,12 +40,10 @@ exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout)
 
 exports.toSVG = function(gd) {
 
-    var bodyStyle = window.getComputedStyle(document.body, null);
     var imageRoot = gd._fullLayout._glimages;
     var root = d3.selectAll('.svg-container');
     var canvases = root.filter(function(d, i) {return i === 0;})
         .selectAll('.parcoords-lines.context, .parcoords-lines.focus');
-    var snapshot = root[0].length > 1;
 
     function canvasToImage() {
         var canvas = this;
@@ -60,8 +58,8 @@ exports.toSVG = function(gd) {
         image.attr({
             xmlns: xmlnsNamespaces.svg,
             'xlink:href': imageData,
-            x: canvasContentOriginX - (snapshot ? 0 : parseFloat(bodyStyle.getPropertyValue('margin-left'))),
-            y: canvasContentOriginY - (snapshot ? 0 : parseFloat(bodyStyle.getPropertyValue('margin-top'))),
+            x: canvasContentOriginX,
+            y: canvasContentOriginY,
             width: parseFloat(canvasStyle.getPropertyValue('width')),
             height: parseFloat(canvasStyle.getPropertyValue('height')),
             preserveAspectRatio: 'none'

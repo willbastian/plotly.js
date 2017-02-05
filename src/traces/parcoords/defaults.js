@@ -12,6 +12,7 @@ var Lib = require('../../lib');
 var attributes = require('./attributes');
 var hasColorscale = require('../../components/colorscale/has_colorscale');
 var colorscaleDefaults = require('../../components/colorscale/defaults');
+var maxDimensionCount = require('./constants').maxDimensionCount;
 
 var handleLineDefaults = function lineDefaults(traceIn, traceOut, defaultColor, layout, coerce) {
 
@@ -26,7 +27,6 @@ var handleLineDefaults = function lineDefaults(traceIn, traceOut, defaultColor, 
     }
 };
 
-
 function dimensionsDefaults(traceIn, traceOut) {
     var dimensionsIn = traceIn.dimensions || [],
         dimensionsOut = traceOut.dimensions = [];
@@ -34,7 +34,10 @@ function dimensionsDefaults(traceIn, traceOut) {
     var dimensionIn, dimensionOut, i;
     var commonLength = Infinity;
 
-    dimensionsIn.splice(60); // parcoords supports up to this many dimensions
+    if(dimensionsIn.length > maxDimensionCount) {
+        Lib.log('parcoords traces support up to ' + maxDimensionCount + ' dimensions at the moment');
+        dimensionsIn.splice(maxDimensionCount);
+    }
 
     function coerce(attr, dflt) {
         return Lib.coerce(dimensionIn, dimensionOut, attributes.dimensions, attr, dflt);

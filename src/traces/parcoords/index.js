@@ -24,7 +24,7 @@ Parcoords.meta = {
     description: [
         'Parallel coordinates for multidimensional exploratory data analysis.',
         'The samples are in `data`.',
-        'The colors are set in `colors`.'
+        'The colors are set in `line.color`.'
     ].join(' ')
 };
 

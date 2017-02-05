@@ -18,7 +18,7 @@ module.exports = function plot(gd, cdparcoords) {
     var root = fullLayout._paperdiv;
     var data = cdparcoords.map(function(d, i) {
         var item = Lib.extendDeep(d[0]);
-        item._gdDataItem = gd.data[i];
+        item._gdDimensions = gd.data[i].dimensions;
         return item;
     });
 
@@ -34,8 +34,11 @@ module.exports = function plot(gd, cdparcoords) {
         gd.emit('plotly_unhover', eventData);
     };
 
+    var axesMoved = function() {
+        gd.emit('plotly_restyle');
+    };
+
     parcoords(
-        gd,
         root,
         svg,
         data,
@@ -46,6 +49,7 @@ module.exports = function plot(gd, cdparcoords) {
         {
             filterChanged: filterChanged,
             hover: hover,
-            unhover: unhover
+            unhover: unhover,
+            axesMoved: axesMoved
         });
 };

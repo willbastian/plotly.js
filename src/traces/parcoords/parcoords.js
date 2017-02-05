@@ -140,8 +140,8 @@ function model(layout, d, i, a) {
     return {
         key: i,
         colCount: d.dimensions.filter(visible).length,
-        _gdDimensions: d._gdDataItem.dimensions,
-        _gdDimensionsOriginalOrder: d._gdDataItem.dimensions.slice(),
+        _gdDimensions: d._gdDimensions,
+        _gdDimensionsOriginalOrder: d._gdDimensions.slice(),
         dimensions: d.dimensions,
         tickDistance: c.tickDistance,
         unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
@@ -234,7 +234,7 @@ function styleExtentTexts(selection) {
         .style('user-select', 'none');
 }
 
-module.exports = function(gd, root, svg, styledData, layout, callbacks) {
+module.exports = function(root, svg, styledData, layout, callbacks) {
 
     var domainBrushing = false;
     var linePickActive = true;
@@ -529,7 +529,9 @@ module.exports = function(gd, root, svg, styledData, layout, callbacks) {
                     var i2 = newIdx(d2);
                     return i1 - i2;
                 });
-                gd.emit('plotly_restyle');
+                if(callbacks && callbacks.axesMoved) {
+                    callbacks.axesMoved();
+                }
             })
         );
 

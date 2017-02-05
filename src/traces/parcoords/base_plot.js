@@ -10,24 +10,15 @@
 
 var d3 = require('d3');
 var Plots = require('../../plots/plots');
-var Registry = require('../../registry');
+var parcoordsPlot = require('./plot');
 var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
 
 exports.name = 'parcoords';
 
-exports.attr = 'parcoords';
-
-exports.idRoot = 'parcoords';
-
-exports.idRegex = /^parcoords([2-9]|[1-9][0-9]+)?$/;
-
-exports.attrRegex = /^parcoords([2-9]|[1-9][0-9]+)?$/;
-
 exports.plot = function(gd) {
-    var Parcoords = Registry.getModule('parcoords');
     var calcData = Plots.getSubplotCalcData(gd.calcdata, 'parcoords', void(0));
 
-    if(calcData.length) Parcoords.plot(gd, calcData);
+    if(calcData.length) parcoordsPlot(gd, calcData);
 };
 
 exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout) {

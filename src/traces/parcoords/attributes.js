@@ -64,16 +64,24 @@ module.exports = {
             description: 'Shows the dimension when set to `true` (the default). Hides the dimension for `false`.'
         },
         range: {
-            valType: 'data_array',
+            valType: 'info_array',
             role: 'info',
+            items: [
+                {valType: 'number'},
+                {valType: 'number'}
+            ],
             description: [
                 'The domain range that represents the full, shown axis extent. Defaults to the `values` extent.',
                 'Must be an array of `[fromValue, toValue]` with finite numbers as elements.'
             ].join(' ')
         },
         constraintrange: {
-            valType: 'data_array',
+            valType: 'info_array',
             role: 'info',
+            items: [
+                {valType: 'number'},
+                {valType: 'number'}
+            ],
             description: [
                 'The domain range to which the filter on the dimension is constrained. Must be an array',
                 'of `[fromValue, toValue]` with finite numbers as elements.'

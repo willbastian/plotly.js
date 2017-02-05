@@ -381,7 +381,7 @@ describe('parcoords initialization tests', function() {
 
 describe('parcoords', function() {
 
-    if(!hasWebGLSupport('scattermapbox hover')) return;
+    if(!hasWebGLSupport('parcoords')) return;
 
     beforeAll(function() {
         mock.data[0].dimensions.forEach(function(d) {

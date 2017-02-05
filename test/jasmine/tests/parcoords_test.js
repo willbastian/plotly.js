@@ -726,6 +726,30 @@ describe('parcoords', function() {
 
         });
 
+        it('Calling `Plotly.restyle` for a dimension should amend the preexisting dimension', function(done) {
+
+            function restyleDimension(key, setterValue) {
+
+                // array values need to be wrapped in an array; unwrapping here for value comparison
+                var value = Lib.isArray(setterValue) ? setterValue[0] : setterValue;
+
+                return function() {
+                    return Plotly.restyle(gd, 'dimensions[2].' + key, setterValue).then(function() {
+                        expect(gd.data[0].dimensions[2][key]).toEqual(value, 'for dimension attribute \'' + key + '\'');
+                    });
+                };
+            }
+
+            restyleDimension('label', 'new label')()
+                .then(restyleDimension('tickvals', [[0, 0.1, 0.4, 1, 2]]))
+                .then(restyleDimension('ticktext', [['alpha', 'gamma', 'beta', 'omega', 'epsilon']]))
+                .then(restyleDimension('range', [[0, 2]]))
+                .then(restyleDimension('constraintrange', [[0, 1]]))
+                .then(restyleDimension('values', [[0, 0.1, 0.4, 1, 2, 0, 0.1, 0.4, 1, 2]]))
+                .then(restyleDimension('visible', false))
+                .then(done);
+        });
+
         it('Calling `Plotly.restyle` with an object should amend the preexisting parcoords', function(done) {
 
             var newStyle = Lib.extendDeep({}, mockCopy.data[0].line);

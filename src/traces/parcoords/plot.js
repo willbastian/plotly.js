@@ -13,16 +13,28 @@ var Lib = require('../../lib');
 
 module.exports = function plot(gd, cdparcoords) {
 
+    var gdDimensionsOriginalOrder = {};
+
     var fullLayout = gd._fullLayout;
     var svg = fullLayout._paper;
     var root = fullLayout._paperdiv;
     var data = cdparcoords.map(function(d, i) {
         var item = Lib.extendDeep(d[0]);
         item._gdDimensions = gd.data[i].dimensions;
+        gdDimensionsOriginalOrder[i] = gd.data[i].dimensions.slice();
         return item;
     });
 
-    var filterChanged = function() {
+    var filterChanged = function(i, originalDimensionIndex, newRange) {
+
+        var gdDimension = gdDimensionsOriginalOrder[i][originalDimensionIndex];
+        var gdConstraintRange = gdDimension.constraintrange;
+        if(!gdConstraintRange || gdConstraintRange.length !== 2) {
+            gdConstraintRange = gdDimension.constraintrange = [];
+        }
+        gdConstraintRange[0] = newRange[0];
+        gdConstraintRange[1] = newRange[1];
+
         gd.emit('plotly_restyle');
     };
 

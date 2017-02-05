@@ -777,14 +777,9 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
             var invScale = dimension.domainToUnitScale.invert;
 
             // update gd.data as if a Plotly.restyle were fired
-            var gdDimension = p.model._gdDimensionsOriginalOrder[dimension.crossfilterDimensionIndex];
-            var gdConstraintRange = gdDimension.constraintrange;
-            if(!gdConstraintRange || gdConstraintRange.length !== 2) {
-                gdConstraintRange = gdDimension.constraintrange = [];
-            }
-            gdConstraintRange[0] = invScale(f[0]);
-            gdConstraintRange[1] = invScale(f[1]);
-            callbacks.filterChanged();
+            var originalDimensionIndex = dimension.crossfilterDimensionIndex;
+            var newRange = f.map(invScale);
+            callbacks.filterChanged(p.key, originalDimensionIndex, newRange);
         }
     }
 

@@ -590,7 +590,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .style('pointer-events', 'auto');
 
     axisTitle
-        .attr('transform', 'translate(0,' + -(c.bar.handleheight + 20) + ')')
+        .attr('transform', 'translate(0,' + -c.axisTitleOffset + ')')
         .text(function(d) {return d.label;});
 
     var axisExtent = axisOverlays.selectAll('.axisExtent')
@@ -608,7 +608,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .classed('axisExtentTop', true);
 
     axisExtentTop
-        .attr('transform', 'translate(' + 0 + ',' + -(c.bar.handleheight - 2) + ')');
+        .attr('transform', 'translate(' + 0 + ',' + -c.axisExtentOffset + ')');
 
     var axisExtentTopText = axisExtentTop.selectAll('.axisExtentTopText')
         .data(repeat, keyFun);
@@ -634,7 +634,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .classed('axisExtentBottom', true);
 
     axisExtentBottom
-        .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + c.bar.handleheight - 2) + ')';});
+        .attr('transform', function(d) {return 'translate(' + 0 + ',' + (d.model.height + c.axisExtentOffset) + ')';});
 
     var axisExtentBottomText = axisExtentBottom.selectAll('.axisExtentBottomText')
         .data(repeat, keyFun);

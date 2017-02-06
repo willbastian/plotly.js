@@ -90,11 +90,6 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
 
     handleLineDefaults(traceIn, traceOut, defaultColor, layout, coerce);
 
-    coerce('pad.t');
-    coerce('pad.r');
-    coerce('pad.b');
-    coerce('pad.l');
-
     coerce('domain.x');
     coerce('domain.y');
 

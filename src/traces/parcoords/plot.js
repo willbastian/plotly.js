@@ -85,7 +85,8 @@ module.exports = function plot(gd, cdparcoords) {
         data,
         {
             width: fullLayout.width,
-            height: fullLayout.height
+            height: fullLayout.height,
+            margin: fullLayout.margin
         },
         {
             filterChanged: filterChanged,

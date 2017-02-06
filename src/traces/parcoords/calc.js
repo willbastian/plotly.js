@@ -43,7 +43,6 @@ module.exports = function calc(gd, trace) {
     return [{
         domain: trace.domain,
         dimensions: dimensions,
-        line: trace.line,
-        pad: trace.pad
+        line: trace.line
     }];
 };

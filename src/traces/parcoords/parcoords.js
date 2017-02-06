@@ -140,8 +140,6 @@ function model(layout, d, i, a) {
     return {
         key: i,
         colCount: d.dimensions.filter(visible).length,
-        _gdDimensions: d._gdDimensions,
-        _gdDimensionsOriginalOrder: d._gdDimensions.slice(),
         dimensions: d.dimensions,
         tickDistance: c.tickDistance,
         unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
@@ -510,27 +508,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                 p.pickLineLayer && p.pickLineLayer.render(p.panels, true);
                 linePickActive = true;
 
-                // Have updated order data on `gd.data` and raise `Plotly.restyle` event
-                // without having to incur heavy UI blocking due to an actual `Plotly.restyle` call
-
-                var orig = p.model._gdDimensionsOriginalOrder
-                    .filter(function(d) {return d.visible === void(0) || d.visible;});
-                function newIdx(dim) {
-                    var origIndex = orig.indexOf(dim);
-                    var currentIndex = p.dimensions.map(function(dd) {return dd.crossfilterDimensionIndex;}).indexOf(origIndex);
-                    if(currentIndex === -1) {
-                        // invisible dimensions go to the end, retaining their original order
-                        currentIndex += orig.length;
-                    }
-                    return currentIndex;
-                }
-                d.model._gdDimensions.sort(function(d1, d2) {
-                    var i1 = newIdx(d1);
-                    var i2 = newIdx(d2);
-                    return i1 - i2;
-                });
                 if(callbacks && callbacks.axesMoved) {
-                    callbacks.axesMoved();
+                    callbacks.axesMoved(p.key, p.dimensions.map(function(dd) {return dd.crossfilterDimensionIndex;}));
                 }
             })
         );

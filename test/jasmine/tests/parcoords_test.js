@@ -833,9 +833,6 @@ describe('parcoords', function() {
                 mockCopy2.data[0].dimensions[2].tickvals = [0, 1, 2, 2.5, 3];
                 mockCopy2.data[0].dimensions[2].values = mockCopy2.data[0].dimensions[2].values.map(numberUpdater);
 
-                // wrap the `dimensions` array
-                mockCopy2.data[0].dimensions = [mockCopy2.data[0].dimensions];
-
                 expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(0);
 
                 Plotly.plot(gd, mockCopy)
@@ -844,7 +841,10 @@ describe('parcoords', function() {
                         expect(document.querySelectorAll('.parcoords-line-layers').length).toEqual(1);
                         expect(gd.data.length).toEqual(1);
 
-                        return Plotly.restyle(gd, mockCopy2.data[0]);
+                        return Plotly.restyle(gd, {
+                            // wrap the `dimensions` array
+                            dimensions: [mockCopy2.data[0].dimensions]
+                        });
                     })
                     .then(function() {
 

@@ -40,6 +40,7 @@ var Tabs = {
         var graphDiv = Tabs.getGraph(id);
 
         if(graphDiv) {
+            Plotly.purge(graphDiv);
             graphDiv.parentNode.removeChild(graphDiv);
         }
 

@@ -318,8 +318,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                 var event = d3.event;
                 var cw = this.width;
                 var ch = this.height;
-                var translateY = d.model.key * (d.model.height + d.model.pad.t + d.model.pad.b);
-                var x = event.layerX - d.model.pad.l + c.overdrag;
+                var translateY = d.model.key * (d.model.height + d.model.pad.t + d.model.pad.b) + d.model.translateY;
+                var x = event.layerX - d.model.pad.l + c.overdrag - d.model.translateX;
                 var y = event.layerY - d.model.pad.t - translateY;
                 if(x < 0 || y < 0 || x >= cw || y >= ch) {
                     return;

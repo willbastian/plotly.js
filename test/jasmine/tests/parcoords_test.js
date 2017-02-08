@@ -77,30 +77,44 @@ describe('parcoords initialization tests', function() {
 
         it('\'dimension\' should be used with default values where attributes are not provided', function() {
             var fullTrace = _supply({
-                dimensions: [{values: []}]
+                dimensions: [{
+                    values: [1],
+                    alienProperty: 'Alpha Centauri'
+                }]
             });
-            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
+            expect(fullTrace.dimensions).toEqual([{values: [1], visible: true, _index: 0}]);
         });
 
-        it('\'dimension.visible\' should be set to false if \'values\' is not provided', function() {
+        it('\'dimension.visible\' should be set to false, and other props just passed through if \'values\' is not provided', function() {
             var fullTrace = _supply({
-                dimensions: [{}]
+                dimensions: [{
+                    visible: true, // should be overridden as `values` is not an array of non-zero length
+                    alienProperty: 'Alpha Centauri'
+                }]
             });
-            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
+            expect(fullTrace.dimensions).toEqual([{visible: false, alienProperty: 'Alpha Centauri'}]);
         });
 
-        it('\'dimension.visible\' should be set to false if \'values\' is an empty array', function() {
+        it('\'dimension.visible\' should be set to false, and other props just passed through if \'values\' is an empty array', function() {
             var fullTrace = _supply({
-                dimensions: [{values: []}]
+                dimensions: [{
+                    visible: true, // should be overridden as `values` is not an array of non-zero length
+                    values: [],
+                    alienProperty: 'Alpha Centauri'
+                }]
             });
-            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
+            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, alienProperty: 'Alpha Centauri'}]);
         });
 
-        it('\'dimension.visible\' should be set to false if \'values\' is not an array', function() {
+        it('\'dimension.visible\' should be set to false, and other props just passed through if \'values\' is not an array', function() {
             var fullTrace = _supply({
-                dimensions: [{values: null}]
+                dimensions: [{
+                    visible: true, // should be overridden as `values` is not an array of non-zero length
+                    values: null,
+                    alienProperty: 'Alpha Centauri'
+                }]
             });
-            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
+            expect(fullTrace.dimensions).toEqual([{visible: false, values: null, alienProperty: 'Alpha Centauri'}]);
         });
 
         it('\'dimension.values\' should get truncated to a common shortest length', function() {
@@ -113,8 +127,8 @@ describe('parcoords initialization tests', function() {
             expect(fullTrace.dimensions).toEqual([
                 {values: [321, 534, 542], visible: true, _index: 0},
                 {values: [562, 124, 942], visible: true, _index: 1},
-                {values: [], visible: false, _index: 2},
-                {values: [1, 2], visible: false, _index: 3}
+                {values: [], visible: false},
+                {values: [1, 2], visible: false}
             ]);
         });
     });
@@ -263,8 +277,8 @@ describe('parcoords', function() {
 
             var mockCopy = Lib.extendDeep({}, mock0);
             var gd = createGraphDiv();
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
 
+            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
                 expect(gd.data.length).toEqual(1);
                 expect(gd.data[0].dimensions.length).toEqual(0);
                 expect(document.querySelectorAll('.axis').length).toEqual(0);

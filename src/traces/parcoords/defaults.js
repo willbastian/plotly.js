@@ -51,29 +51,41 @@ function dimensionsDefaults(traceIn, traceOut) {
             continue;
         }
 
-        coerce('label');
-        coerce('tickvals');
-        coerce('ticktext');
-        coerce('visible');
-        coerce('range');
-        coerce('constraintrange');
-        coerce('values');
+        var userVisible = coerce('visible');
 
         // turn dimensions with no data invisible
-        dimensionOut.visible = dimensionOut.visible && dimensionOut.values.length > 0;
+        var actuallyVisible = userVisible && Lib.isArray(dimensionIn.values) && dimensionIn.values.length > 0;
 
-        if(dimensionOut.visible) {
+        if(actuallyVisible) {
+
+            coerce('label');
+            coerce('tickvals');
+            coerce('ticktext');
+            coerce('range');
+            coerce('constraintrange');
+            coerce('values');
+
             commonLength = Math.min(commonLength, dimensionOut.values.length);
+
+            dimensionOut._index = i;
+
+        } else {
+
+            dimensionOut = Lib.extendFlat({}, dimensionIn);
+
         }
 
-        dimensionOut._index = i;
+        dimensionOut.visible = actuallyVisible;
+
         dimensionsOut.push(dimensionOut);
     }
 
-    for(i = 0; i < dimensionsOut.length; i++) {
-        dimensionOut = dimensionsOut[i];
-        if(dimensionOut.values.length > commonLength) {
-            dimensionOut.values = dimensionOut.values.slice(0, commonLength);
+    if(isFinite(commonLength)) {
+        for(i = 0; i < dimensionsOut.length; i++) {
+            dimensionOut = dimensionsOut[i];
+            if(dimensionOut.visible && dimensionOut.values.length > commonLength) {
+                dimensionOut.values = dimensionOut.values.slice(0, commonLength);
+            }
         }
     }
 

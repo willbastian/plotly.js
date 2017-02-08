@@ -74,16 +74,30 @@ describe('parcoords initialization tests', function() {
             expect(fullTrace.dimensions).toEqual([]);
         });
 
-        it('\'dimension\' should be ignored if `values` are unsupported', function() {
-            var fullTrace = _supply({
-                dimensions: [{label: 'test dimension'}]
-            });
-            expect(fullTrace.dimensions).toEqual([]);
-        });
-
         it('\'dimension\' should be used with default values where attributes are not provided', function() {
             var fullTrace = _supply({
                 dimensions: [{values: []}]
+            });
+            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
+        });
+
+        it('\'dimension.visible\' should be set to false if \'values\' is not provided', function() {
+            var fullTrace = _supply({
+                dimensions: [{}]
+            });
+            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
+        });
+
+        it('\'dimension.visible\' should be set to false if \'values\' is an empty array', function() {
+            var fullTrace = _supply({
+                dimensions: [{values: []}]
+            });
+            expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
+        });
+
+        it('\'dimension.visible\' should be set to false if \'values\' is not an array', function() {
+            var fullTrace = _supply({
+                dimensions: [{values: null}]
             });
             expect(fullTrace.dimensions).toEqual([{values: [], visible: false, _index: 0}]);
         });

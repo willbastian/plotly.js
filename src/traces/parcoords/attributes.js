@@ -89,6 +89,7 @@ module.exports = {
         values: {
             valType: 'data_array',
             role: 'info',
+            dflt: [],
             description: [
                 'Dimension values. `values[n]` represents the value of the `n`th point in the dataset,',
                 'therefore the `values` vector for all dimensions must be the same (longer vectors',

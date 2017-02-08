@@ -47,7 +47,7 @@ function dimensionsDefaults(traceIn, traceOut) {
         dimensionIn = dimensionsIn[i];
         dimensionOut = {};
 
-        if(!Lib.isPlainObject(dimensionIn) || !Array.isArray(dimensionIn.values)) {
+        if(!Lib.isPlainObject(dimensionIn)) {
             continue;
         }
 
@@ -60,10 +60,10 @@ function dimensionsDefaults(traceIn, traceOut) {
         coerce('values');
 
         // turn dimensions with no data invisible
-        dimensionOut.visible = dimensionOut.visible && dimensionIn.values.length > 0;
+        dimensionOut.visible = dimensionOut.visible && dimensionOut.values.length > 0;
 
         if(dimensionOut.visible) {
-            commonLength = Math.min(commonLength, dimensionIn.values.length);
+            commonLength = Math.min(commonLength, dimensionOut.values.length);
         }
 
         dimensionOut._index = i;

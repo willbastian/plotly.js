@@ -17,7 +17,8 @@ var mock2 = require('@mocks/gl2d_parcoords_2.json');
 var mock1 = require('@mocks/gl2d_parcoords_1.json');
 
 // mock with zero dimensions; special case, as no dimension can be rendered
-var mock0 = Lib.extendDeep({}, mock1, { dimensions: [] });
+var mock0 = Lib.extendDeep({}, mock1);
+mock0.data[0].dimensions = [];
 
 var mock = require('@mocks/gl2d_parcoords_large.json');
 
@@ -646,15 +647,15 @@ describe('parcoords', function() {
 
             expect(tester.get()).toBe(false);
 
-            mouseEvent('mousemove', 101, 181);
-            mouseEvent('mouseover', 101, 181);
+            mouseEvent('mousemove', 111, 207);
+            mouseEvent('mouseover', 111, 207);
 
             window.setTimeout(function() {
 
                 expect(tester.get().hover.curveNumber).toBe(36);
 
-                mouseEvent('mousemove', 100, 100);
-                mouseEvent('mouseover', 100, 100);
+                mouseEvent('mousemove', 110, 126);
+                mouseEvent('mouseover', 110, 126);
 
                 window.setTimeout(function() {
 

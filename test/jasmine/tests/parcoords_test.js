@@ -10,14 +10,14 @@ var destroyGraphDiv = require('../assets/destroy_graph_div');
 var hasWebGLSupport = require('../assets/has_webgl_support');
 var mouseEvent = require('../assets/mouse_event');
 
-// mock with zero dimensions; special case, as no dimension can be rendered
-var mock0 = require('@mocks/gl2d_parcoords_0.json');
+// mock with two dimensions (one panel); special case, e.g. left and right panel is obv. the same
+var mock2 = require('@mocks/gl2d_parcoords_2.json');
 
 // mock with one dimension (zero panels); special case, as no panel can be rendered
 var mock1 = require('@mocks/gl2d_parcoords_1.json');
 
-// mock with two dimensions (one panel); special case, e.g. left and right panel is obv. the same
-var mock2 = require('@mocks/gl2d_parcoords_2.json');
+// mock with zero dimensions; special case, as no dimension can be rendered
+var mock0 = Lib.extendDeep({}, mock1, { dimensions: [] });
 
 var mock = require('@mocks/gl2d_parcoords_large.json');
 

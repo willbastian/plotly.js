@@ -15,18 +15,24 @@ var xmlnsNamespaces = require('../../constants/xmlns_namespaces');
 
 exports.name = 'parcoords';
 
-exports.plot = function(gd) {
-    var calcData = Plots.getSubplotCalcData(gd.calcdata, 'parcoords', void(0));
+exports.attr = 'type';
 
+exports.plot = function(gd) {
+    var calcData = Plots.getSubplotCalcData(gd.calcdata, 'parcoords', 'parcoords');
     if(calcData.length) parcoordsPlot(gd, calcData);
 };
 
 exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout) {
-    oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
-    oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
-    oldFullLayout._paperdiv.selectAll('.parcoords').remove();
-    oldFullLayout._paperdiv.selectAll('.parcoords').remove();
-    oldFullLayout._glimages.selectAll('*').remove();
+    var hadParcoords = (oldFullLayout._has && oldFullLayout._has('parcoords'));
+    var hasParcoords = (newFullLayout._has && newFullLayout._has('parcoords'));
+
+    if(hadParcoords && !hasParcoords) {
+        oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
+        oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
+        oldFullLayout._paperdiv.selectAll('.parcoords').remove();
+        oldFullLayout._paperdiv.selectAll('.parcoords').remove();
+        oldFullLayout._glimages.selectAll('*').remove();
+    }
 };
 
 exports.toSVG = function(gd) {

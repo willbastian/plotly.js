@@ -282,6 +282,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
     var parcoordsLineLayers = root.selectAll('.parcoords-line-layers')
         .data(vm, keyFun);
 
+    parcoordsLineLayers.exit().remove();
+
     parcoordsLineLayers.enter()
         .insert('div', '.' + svg.attr('class').split(' ').join(' .')) // not hardcoding .main-svg
         .classed('parcoords-line-layers', true)
@@ -357,6 +359,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
     svg.style('background', 'rgba(255, 255, 255, 0)');
     var parcoordsControlOverlay = svg.selectAll('.parcoords')
         .data(vm, keyFun);
+
+    parcoordsControlOverlay.exit().remove();
 
     parcoordsControlOverlay.enter()
         .append('g')

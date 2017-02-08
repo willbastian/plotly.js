@@ -102,6 +102,11 @@ function palette(unitToColor, context, opacity) {
     return result;
 }
 
+// Maps the sample index [0...sampleCount - 1] to a range of [0, 1] as the shader expects colors in the [0, 1] range.
+// but first it shifts the sample index by 0, 8 or 16 bits depending on rgbIndex [0..2]
+// with the end result that each line will be of a unique color, making it possible for the pick handler
+// to uniquely identify which line is hovered over (bijective mapping).
+// The inverse, i.e. readPixel is invoked from 'parcoords.js'
 function calcPickColor(j, rgbIndex) {
     return (j >>> 8 * rgbIndex) % 256 / 255;
 }

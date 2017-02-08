@@ -325,6 +325,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                 }
                 var pixel = d.lineLayer.readPixel(x, ch - 1 - y);
                 var found = pixel[3] !== 0;
+                // inverse of the calcPickColor in `lines.js`; detailed comment there
                 var curveNumber = found ? pixel[2] + 256 * (pixel[1] + 256 * pixel[0]) : null;
                 var eventData = {
                     x: x,

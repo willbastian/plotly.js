@@ -11,7 +11,7 @@
 var createREGL = require('regl');
 var glslify = require('glslify');
 var vertexShaderSource = glslify('./shaders/vertex.glsl');
-var pickVertexShaderSource = glslify('./shaders/pickVertex.glsl');
+var pickVertexShaderSource = glslify('./shaders/pick_vertex.glsl');
 var fragmentShaderSource = glslify('./shaders/fragment.glsl');
 
 var depthLimitEpsilon = 1e-6; // don't change; otherwise near/far plane lines are lost

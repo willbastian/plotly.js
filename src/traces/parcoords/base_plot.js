@@ -50,8 +50,11 @@ exports.toSVG = function(gd) {
         var rect = canvas.getBoundingClientRect();
         var parentRect = canvas.parentElement.getBoundingClientRect();
         var canvasStyle = window.getComputedStyle(canvas, null);
-        var canvasContentOriginX = parseFloat(canvasStyle.getPropertyValue('padding-left')) + (rect.left - parentRect.left);
-        var canvasContentOriginY = parseFloat(canvasStyle.getPropertyValue('padding-top')) + (rect.top - parentRect.top);
+        var parentStyle = window.getComputedStyle(canvas.parentElement, null);
+        var canvasOffset = parentStyle.getPropertyValue('transform').split(')')[0].split(',').slice(-2)
+            .map(function(s) {return parseFloat(s);});
+        var canvasContentOriginX = parseFloat(canvasStyle.getPropertyValue('padding-left')) + (rect.left - parentRect.left) + canvasOffset[0];
+        var canvasContentOriginY = parseFloat(canvasStyle.getPropertyValue('padding-top')) + (rect.top - parentRect.top) + canvasOffset[1];
         var imageData = canvas.toDataURL('image/png');
         var image = imageRoot.append('svg:image');
 

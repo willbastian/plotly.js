@@ -225,7 +225,6 @@ function styleExtentTexts(selection) {
     selection
         .classed('axisExtentText', true)
         .attr('text-anchor', 'middle')
-        .style('font-family', 'monospace')
         .style('font-weight', 100)
         .style('font-size', '10px')
         .style('cursor', 'default')
@@ -560,7 +559,6 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
 
     axisEnter
         .selectAll('text')
-        .style('font-family', 'monospace')
         .style('font-weight', 100)
         .style('font-size', '10px')
         .style('fill', 'black')

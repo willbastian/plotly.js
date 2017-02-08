@@ -331,6 +331,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                 var eventData = {
                     x: x,
                     y: y,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
                     dataIndex: d.model.key,
                     curveNumber: curveNumber
                 };

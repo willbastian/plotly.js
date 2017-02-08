@@ -225,7 +225,7 @@ describe('parcoords', function() {
 
     beforeAll(function() {
         mock.data[0].dimensions.forEach(function(d) {
-            d.values = d.values.slice(0, 100);
+            d.values = d.values.slice(30, 40);
         });
     });
 
@@ -661,12 +661,12 @@ describe('parcoords', function() {
 
             expect(tester.get()).toBe(false);
 
-            mouseEvent('mousemove', 111, 207);
-            mouseEvent('mouseover', 111, 207);
+            mouseEvent('mousemove', 946, 234);
+            mouseEvent('mouseover', 946, 234);
 
             window.setTimeout(function() {
 
-                expect(tester.get().hover.curveNumber).toBe(36);
+                expect(tester.get().hover.curveNumber).toBe(4);
 
                 mouseEvent('mousemove', 110, 126);
                 mouseEvent('mouseover', 110, 126);

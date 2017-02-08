@@ -145,7 +145,7 @@ function model(layout, d, i, a) {
         unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
         lines: lines,
         translateX: (d.domain.x[0] || 0) * layout.width,
-        translateY: (d.domain.y[0] || 0) * layout.height,
+        translateY: layout.height - (d.domain.y[1] || 1) * layout.height,
         pad: pad,
         canvasWidth: rowContentWidth * c.canvasPixelRatio + 2 * lines.canvasOverdrag,
         canvasHeight: rowHeight * c.canvasPixelRatio,

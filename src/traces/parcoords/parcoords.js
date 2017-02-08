@@ -374,8 +374,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .attr('width', function(d) {return d.model.width + d.model.pad.l + d.model.pad.r;})
         .attr('height', function(d) {return d.model.height + d.model.pad.t + d.model.pad.b;})
         .attr('transform', function(d, i) {
-            var translateY = i * (d.model.height + d.model.pad.t + d.model.pad.b);
-            return 'translate(0,' + translateY + ')';
+            var translateY = d.model.translateY + i * (d.model.height + d.model.pad.t + d.model.pad.b);
+            return 'translate(' + d.model.translateX + ',' + translateY + ')';
         });
 
     var parcoordsControlView = parcoordsControlOverlay.selectAll('.parcoordsControlView')

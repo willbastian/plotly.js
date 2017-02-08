@@ -3,16 +3,12 @@
     "width": 300,
     "height": 300
   },
+
   "data": [{
 
-    "domain": {
-      "x": [0, 1],
-      "y": [0, 1]
-    },
-
     "type": "parcoords",
-    "line": {
 
+    "line": {
       "showscale": true,
       "reversescale": true,
       "colorscale": "Jet",
@@ -20,6 +16,7 @@
       "cmax": -100,
       "color": [-41, -1317, -164, -1856, -79, -931, -191, -2983, -341, -3846]
     },
+
     "dimensions": [
       {
         "id": "Block height",

@@ -14,7 +14,7 @@ var hasColorscale = require('../../components/colorscale/has_colorscale');
 var colorscaleDefaults = require('../../components/colorscale/defaults');
 var maxDimensionCount = require('./constants').maxDimensionCount;
 
-var handleLineDefaults = function lineDefaults(traceIn, traceOut, defaultColor, layout, coerce) {
+function handleLineDefaults(traceIn, traceOut, defaultColor, layout, coerce) {
 
     coerce('line.color', defaultColor);
     coerce('line.colorscale');
@@ -51,33 +51,21 @@ function dimensionsDefaults(traceIn, traceOut) {
             continue;
         }
 
-        var userVisible = coerce('visible');
+        var values = coerce('values');
+        var visible = coerce('visible', values.length > 0);
 
-        // turn dimensions with no data invisible
-        var actuallyVisible = userVisible && Lib.isArray(dimensionIn.values) && dimensionIn.values.length > 0;
-
-        if(actuallyVisible) {
-
+        if(visible) {
             coerce('label');
             coerce('tickvals');
             coerce('ticktext');
             coerce('tickformat');
             coerce('range');
             coerce('constraintrange');
-            coerce('values');
 
             commonLength = Math.min(commonLength, dimensionOut.values.length);
-
-            dimensionOut._index = i;
-
-        } else {
-
-            dimensionOut = Lib.extendFlat({}, dimensionIn);
-
         }
 
-        dimensionOut.visible = actuallyVisible;
-
+        dimensionOut._index = i;
         dimensionsOut.push(dimensionOut);
     }
 

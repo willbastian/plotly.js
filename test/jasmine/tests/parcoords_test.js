@@ -22,6 +22,9 @@ mock0.data[0].dimensions = [];
 
 var mock = require('@mocks/gl2d_parcoords_large.json');
 
+var lineStart = 30;
+var lineCount = 10;
+
 describe('parcoords initialization tests', function() {
 
     'use strict';
@@ -225,8 +228,9 @@ describe('parcoords', function() {
 
     beforeAll(function() {
         mock.data[0].dimensions.forEach(function(d) {
-            d.values = d.values.slice(30, 40);
+            d.values = d.values.slice(lineStart, lineStart + lineCount);
         });
+        mock.data[0].line.color = mock.data[0].line.color.slice(lineStart, lineStart + lineCount);
     });
 
     afterEach(destroyGraphDiv);

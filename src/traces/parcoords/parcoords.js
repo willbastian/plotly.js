@@ -111,31 +111,35 @@ function unitToColorScale(cscale) {
 }
 
 function model(layout, d, i, a) {
+    var trace = d.trace,
+        line = trace.line,
+        domain = trace.domain,
+        dimensions = trace.dimensions;
 
-    var lines = Lib.extendDeep({}, d.line, {
-        color: d.line.color.map(domainToUnitScale({values: d.line.color, range: [d.line.cmin, d.line.cmax]})),
+    var lines = Lib.extendDeep({}, line, {
+        color: line.color.map(domainToUnitScale({values: line.color, range: [line.cmin, line.cmax]})),
         blockLineCount: c.blockLineCount,
         canvasOverdrag: c.overdrag * c.canvasPixelRatio
     });
 
     var groupCount = a.length;
-    var groupWidth = layout.width * (d.domain.x[1] - d.domain.x[0]);
-    var groupHeight = layout.height * (d.domain.y[1] - d.domain.y[0]) / groupCount;
+    var groupWidth = layout.width * (domain.x[1] - domain.x[0]);
+    var groupHeight = layout.height * (domain.y[1] - domain.y[0]) / groupCount;
 
     var pad = layout.margin || {l: 80, r: 80, t: 100, b: 80};
     var rowPad = pad;
-    var rowContentWidth = groupWidth - pad.l - pad.r - (d.line.showscale ? c.legendWidth : 0); // leavig room for the colorbar
+    var rowContentWidth = groupWidth - pad.l - pad.r - (line.showscale ? c.legendWidth : 0); // leavig room for the colorbar
     var rowHeight = groupHeight - rowPad.t - rowPad.b;
 
     return {
         key: i,
-        colCount: d.dimensions.filter(visible).length,
-        dimensions: d.dimensions,
+        colCount: dimensions.filter(visible).length,
+        dimensions: dimensions,
         tickDistance: c.tickDistance,
-        unitToColor: unitToColorScale(d.line.colorscale),
+        unitToColor: unitToColorScale(line.colorscale),
         lines: lines,
-        translateX: d.domain.x[0] * layout.width,
-        translateY: layout.height - d.domain.y[1] * layout.height,
+        translateX: domain.x[0] * layout.width,
+        translateY: layout.height - domain.y[1] * layout.height,
         pad: pad,
         canvasWidth: rowContentWidth * c.canvasPixelRatio + 2 * lines.canvasOverdrag,
         canvasHeight: rowHeight * c.canvasPixelRatio,
@@ -266,7 +270,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
     }
 
     var vm = styledData
-        .filter(function(d) {return !!d.dimensions && d.dimensions.length > 0;})
+        .filter(function(d) { return d.trace.visible; })
         .map(model.bind(0, layout))
         .map(viewModel);
 

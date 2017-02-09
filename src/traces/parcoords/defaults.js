@@ -25,7 +25,7 @@ function handleLineDefaults(traceIn, traceOut, defaultColor, layout, coerce) {
     else {
         coerce('line.color', defaultColor);
     }
-};
+}
 
 function dimensionsDefaults(traceIn, traceOut) {
     var dimensionsIn = traceIn.dimensions || [],

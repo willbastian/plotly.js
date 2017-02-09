@@ -10,12 +10,12 @@
 
 var createREGL = require('regl');
 var glslify = require('glslify');
+var verticalPadding = require('./constants').verticalPadding;
 var vertexShaderSource = glslify('./shaders/vertex.glsl');
 var pickVertexShaderSource = glslify('./shaders/pick_vertex.glsl');
 var fragmentShaderSource = glslify('./shaders/fragment.glsl');
 
 var depthLimitEpsilon = 1e-6; // don't change; otherwise near/far plane lines are lost
-var filterEpsilon = 1e-3; // don't change; otherwise filter may lose lines on domain boundaries
 
 var gpuDimensionCount = 64;
 var sectionVertexCount = 2;
@@ -297,6 +297,7 @@ module.exports = function(canvasGL, lines, canvasWidth, canvasHeight, initialDim
     function makeItem(i, ii, x, y, panelSizeX, canvasPanelSizeY, crossfilterDimensionIndex, scatter, I, leftmost, rightmost) {
         var loHi, abcd, d, index;
         var leftRight = [i, ii];
+        var filterEpsilon = verticalPadding / canvasPanelSizeY;
 
         var dims = [0, 1].map(function() {return [0, 1, 2, 3].map(function() {return new Float32Array(16);});});
         var lims = [0, 1].map(function() {return [0, 1, 2, 3].map(function() {return new Float32Array(16);});});

@@ -19,17 +19,14 @@ exports.attr = 'type';
 
 exports.plot = function(gd) {
     var calcData = Plots.getSubplotCalcData(gd.calcdata, 'parcoords', 'parcoords');
-
-    // should we filterVisible here???
-
     if(calcData.length) parcoordsPlot(gd, calcData);
 };
 
 exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout) {
-    var hadPie = (oldFullLayout._has && oldFullLayout._has('parcoords'));
-    var hasPie = (newFullLayout._has && newFullLayout._has('parcoords'));
+    var hadParcoords = (oldFullLayout._has && oldFullLayout._has('parcoords'));
+    var hasParcoords = (newFullLayout._has && newFullLayout._has('parcoords'));
 
-    if(hasPie && !hasPie) {
+    if(hadParcoords && !hasParcoords) {
         oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
         oldFullLayout._paperdiv.selectAll('.parcoords-line-layers').remove();
         oldFullLayout._paperdiv.selectAll('.parcoords').remove();

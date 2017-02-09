@@ -87,7 +87,7 @@ function ordinalScale(dimension) {
             .range(dimension.tickvals.map(function(d) {return (d - extent[0]) / (extent[1] - extent[0]);}));
 }
 
-function unitToColorScale(cscale, cmin, cmax, coloringArray) {
+function unitToColorScale(cscale) {
 
     var colorStops = cscale.map(function(d) {return d[0];});
     var colorStrings = cscale.map(function(d) {return d[1];});
@@ -103,19 +103,9 @@ function unitToColorScale(cscale, cmin, cmax, coloringArray) {
             .range(colorTuples.map(prop(key)));
     });
 
-    var colorToUnitScale = d3.scale.linear()
-        .domain(d3.extent(coloringArray));
-
-    var unitMin = colorToUnitScale(cmin);
-    var unitMax = colorToUnitScale(cmax);
-
-    var cScale = d3.scale.linear()
-        .clamp(true)
-        .domain([unitMin, unitMax]);
-
     return function(d) {
         return polylinearUnitScales.map(function(s) {
-            return s(cScale(d));
+            return s(d);
         });
     };
 }
@@ -123,7 +113,7 @@ function unitToColorScale(cscale, cmin, cmax, coloringArray) {
 function model(layout, d, i, a) {
 
     var lines = Lib.extendDeep({}, d.line, {
-        color: d.line.color.map(domainToUnitScale({values: d.line.color})),
+        color: d.line.color.map(domainToUnitScale({values: d.line.color, range: [d.line.cmin, d.line.cmax]})),
         blockLineCount: c.blockLineCount,
         canvasOverdrag: c.overdrag * c.canvasPixelRatio
     });
@@ -142,10 +132,10 @@ function model(layout, d, i, a) {
         colCount: d.dimensions.filter(visible).length,
         dimensions: d.dimensions,
         tickDistance: c.tickDistance,
-        unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
+        unitToColor: unitToColorScale(d.line.colorscale),
         lines: lines,
-        translateX: (d.domain.x[0] || 0) * layout.width,
-        translateY: (d.domain.y[0] || 0) * layout.height,
+        translateX: d.domain.x[0] * layout.width,
+        translateY: layout.height - d.domain.y[1] * layout.height,
         pad: pad,
         canvasWidth: rowContentWidth * c.canvasPixelRatio + 2 * lines.canvasOverdrag,
         canvasHeight: rowHeight * c.canvasPixelRatio,
@@ -184,8 +174,9 @@ function viewModel(model) {
         return {
             key: key,
             label: dimension.label,
-            tickvals: dimension.tickvals || false,
-            ticktext: dimension.ticktext || false,
+            tickFormat: dimension.tickformat,
+            tickvals: dimension.tickvals,
+            ticktext: dimension.ticktext,
             ordinal: !!dimension.tickvals,
             scatter: c.scatter || dimension.scatter,
             xIndex: i,
@@ -282,6 +273,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
     var parcoordsLineLayers = root.selectAll('.parcoords-line-layers')
         .data(vm, keyFun);
 
+    parcoordsLineLayers.exit().remove();
+
     parcoordsLineLayers.enter()
         .insert('div', '.' + svg.attr('class').split(' ').join(' .')) // not hardcoding .main-svg
         .classed('parcoords-line-layers', true)
@@ -316,8 +309,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                 var event = d3.event;
                 var cw = this.width;
                 var ch = this.height;
-                var translateY = d.model.key * (d.model.height + d.model.pad.t + d.model.pad.b);
-                var x = event.layerX - d.model.pad.l + c.overdrag;
+                var translateY = d.model.key * (d.model.height + d.model.pad.t + d.model.pad.b) + d.model.translateY;
+                var x = event.layerX - d.model.pad.l + c.overdrag - d.model.translateX;
                 var y = event.layerY - d.model.pad.t - translateY;
                 if(x < 0 || y < 0 || x >= cw || y >= ch) {
                     return;
@@ -329,6 +322,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                 var eventData = {
                     x: x,
                     y: y,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
                     dataIndex: d.model.key,
                     curveNumber: curveNumber
                 };
@@ -357,6 +352,8 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
     svg.style('background', 'rgba(255, 255, 255, 0)');
     var parcoordsControlOverlay = svg.selectAll('.parcoords')
         .data(vm, keyFun);
+
+    parcoordsControlOverlay.exit().remove();
 
     parcoordsControlOverlay.enter()
         .append('g')
@@ -542,7 +539,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                     .orient('left')
                     .tickSize(4)
                     .outerTickSize(2)
-                    .ticks(wantedTickCount, '3s') // works for continuous scales only...
+                    .ticks(wantedTickCount, d.tickFormat) // works for continuous scales only...
                     .tickValues(d.ordinal ? // and this works for ordinal scales
                         sdom.filter(function(d, i) {return !(i % Math.round((sdom.length / wantedTickCount)));})
                             .map(function(d, i) {return texts && texts[i] || d;}) :
@@ -613,7 +610,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .data(repeat, keyFun);
 
     function formatExtreme(d) {
-        return d.ordinal ? d3.format('.0s') : d3.format('.3s');
+        return d.ordinal ? function() {return '';} : d3.format(d.tickFormat);
     }
 
     axisExtentTopText.enter()

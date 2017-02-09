@@ -23,6 +23,7 @@ module.exports = function calc(gd, trace) {
             constraintrange: inputDimensions[i].constraintrange,
             tickvals: inputDimensions[i].tickvals,
             ticktext: inputDimensions[i].ticktext,
+            tickformat: inputDimensions[i].tickformat,
             visible: inputDimensions[i].visible,
             label: inputDimensions[i].label,
             values: inputDimensions[i].values

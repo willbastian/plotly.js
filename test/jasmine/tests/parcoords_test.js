@@ -22,6 +22,9 @@ mock0.data[0].dimensions = [];
 
 var mock = require('@mocks/gl2d_parcoords_large.json');
 
+var lineStart = 30;
+var lineCount = 10;
+
 describe('parcoords initialization tests', function() {
 
     'use strict';
@@ -82,7 +85,7 @@ describe('parcoords initialization tests', function() {
                     alienProperty: 'Alpha Centauri'
                 }]
             });
-            expect(fullTrace.dimensions).toEqual([{values: [1], visible: true, _index: 0}]);
+            expect(fullTrace.dimensions).toEqual([{values: [1], visible: true, tickformat: '3s', _index: 0}]);
         });
 
         it('\'dimension.visible\' should be set to false, and other props just passed through if \'values\' is not provided', function() {
@@ -125,8 +128,8 @@ describe('parcoords initialization tests', function() {
                 {values: [1, 2], visible: false} // shouldn't be truncated to as false
             ]});
             expect(fullTrace.dimensions).toEqual([
-                {values: [321, 534, 542], visible: true, _index: 0},
-                {values: [562, 124, 942], visible: true, _index: 1},
+                {values: [321, 534, 542], visible: true, tickformat: '3s', _index: 0},
+                {values: [562, 124, 942], visible: true, tickformat: '3s', _index: 1},
                 {values: [], visible: false},
                 {values: [1, 2], visible: false}
             ]);
@@ -225,8 +228,9 @@ describe('parcoords', function() {
 
     beforeAll(function() {
         mock.data[0].dimensions.forEach(function(d) {
-            d.values = d.values.slice(0, 100);
+            d.values = d.values.slice(lineStart, lineStart + lineCount);
         });
+        mock.data[0].line.color = mock.data[0].line.color.slice(lineStart, lineStart + lineCount);
     });
 
     afterEach(destroyGraphDiv);
@@ -494,6 +498,10 @@ describe('parcoords', function() {
 
         beforeEach(function(done) {
             mockCopy = Lib.extendDeep({}, mock);
+            mockCopy.data[0].domain = {
+                x: [0.1, 0.9],
+                y: [0.05, 0.85]
+            };
             gd = createGraphDiv();
             Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
         });
@@ -583,6 +591,7 @@ describe('parcoords', function() {
             restyleDimension('label', 'new label')()
                 .then(restyleDimension('tickvals', [[0, 0.1, 0.4, 1, 2]]))
                 .then(restyleDimension('ticktext', [['alpha', 'gamma', 'beta', 'omega', 'epsilon']]))
+                .then(restyleDimension('tickformat', '4s'))
                 .then(restyleDimension('range', [[0, 2]]))
                 .then(restyleDimension('constraintrange', [[0, 1]]))
                 .then(restyleDimension('values', [[0, 0.1, 0.4, 1, 2, 0, 0.1, 0.4, 1, 2]]))
@@ -661,15 +670,15 @@ describe('parcoords', function() {
 
             expect(tester.get()).toBe(false);
 
-            mouseEvent('mousemove', 111, 207);
-            mouseEvent('mouseover', 111, 207);
+            mouseEvent('mousemove', 853, 254);
+            mouseEvent('mouseover', 853, 254);
 
             window.setTimeout(function() {
 
-                expect(tester.get().hover.curveNumber).toBe(36);
+                expect(tester.get().hover.curveNumber).toBe(4);
 
-                mouseEvent('mousemove', 110, 126);
-                mouseEvent('mouseover', 110, 126);
+                mouseEvent('mousemove', 800, 240);
+                mouseEvent('mouseover', 800, 240);
 
                 window.setTimeout(function() {
 

@@ -619,7 +619,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .data(repeat, keyFun);
 
     function formatExtreme(d) {
-        return d.ordinal ? d3.format('.0s') : d3.format('.3s');
+        return d.ordinal ? function() {return '';} : d3.format('.3s');
     }
 
     axisExtentTopText.enter()

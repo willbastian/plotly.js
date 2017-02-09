@@ -87,7 +87,7 @@ function ordinalScale(dimension) {
             .range(dimension.tickvals.map(function(d) {return (d - extent[0]) / (extent[1] - extent[0]);}));
 }
 
-function unitToColorScale(cscale, cmin, cmax, coloringArray) {
+function unitToColorScale(cscale) {
 
     var colorStops = cscale.map(function(d) {return d[0];});
     var colorStrings = cscale.map(function(d) {return d[1];});
@@ -103,19 +103,9 @@ function unitToColorScale(cscale, cmin, cmax, coloringArray) {
             .range(colorTuples.map(prop(key)));
     });
 
-    var colorToUnitScale = d3.scale.linear()
-        .domain(d3.extent(coloringArray));
-
-    var unitMin = colorToUnitScale(cmin);
-    var unitMax = colorToUnitScale(cmax);
-
-    var cScale = d3.scale.linear()
-        .clamp(true)
-        .domain([unitMin, unitMax]);
-
     return function(d) {
         return polylinearUnitScales.map(function(s) {
-            return s(cScale(d));
+            return s(d);
         });
     };
 }
@@ -123,7 +113,7 @@ function unitToColorScale(cscale, cmin, cmax, coloringArray) {
 function model(layout, d, i, a) {
 
     var lines = Lib.extendDeep({}, d.line, {
-        color: d.line.color.map(domainToUnitScale({values: d.line.color})),
+        color: d.line.color.map(domainToUnitScale({values: d.line.color, range: [d.line.cmin, d.line.cmax]})),
         blockLineCount: c.blockLineCount,
         canvasOverdrag: c.overdrag * c.canvasPixelRatio
     });
@@ -142,7 +132,7 @@ function model(layout, d, i, a) {
         colCount: d.dimensions.filter(visible).length,
         dimensions: d.dimensions,
         tickDistance: c.tickDistance,
-        unitToColor: unitToColorScale(d.line.colorscale, d.line.cmin, d.line.cmax, d.line.color),
+        unitToColor: unitToColorScale(d.line.colorscale),
         lines: lines,
         translateX: d.domain.x[0] * layout.width,
         translateY: layout.height - d.domain.y[1] * layout.height,

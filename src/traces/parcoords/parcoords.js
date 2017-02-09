@@ -548,7 +548,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                     .orient('left')
                     .tickSize(4)
                     .outerTickSize(2)
-                    .ticks(wantedTickCount, '3s') // works for continuous scales only...
+                    .ticks(wantedTickCount, c.tickFormat) // works for continuous scales only...
                     .tickValues(d.ordinal ? // and this works for ordinal scales
                         sdom.filter(function(d, i) {return !(i % Math.round((sdom.length / wantedTickCount)));})
                             .map(function(d, i) {return texts && texts[i] || d;}) :
@@ -619,7 +619,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .data(repeat, keyFun);
 
     function formatExtreme(d) {
-        return d.ordinal ? function() {return '';} : d3.format('.3s');
+        return d.ordinal ? function() {return '';} : d3.format(c.tickFormat);
     }
 
     axisExtentTopText.enter()

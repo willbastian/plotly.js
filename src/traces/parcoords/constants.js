@@ -15,6 +15,7 @@ module.exports = {
     legendWidth: 80,
     verticalPadding: 2, // otherwise, horizontal lines on top or bottom are of lower width
     tickDistance: 50,
+    tickFormat: '3s',
     canvasPixelRatio: 1,
     blockLineCount: 5000,
     scatter: false,

@@ -82,7 +82,7 @@ describe('parcoords initialization tests', function() {
                     alienProperty: 'Alpha Centauri'
                 }]
             });
-            expect(fullTrace.dimensions).toEqual([{values: [1], visible: true, _index: 0}]);
+            expect(fullTrace.dimensions).toEqual([{values: [1], visible: true, tickformat: '3s', _index: 0}]);
         });
 
         it('\'dimension.visible\' should be set to false, and other props just passed through if \'values\' is not provided', function() {
@@ -125,8 +125,8 @@ describe('parcoords initialization tests', function() {
                 {values: [1, 2], visible: false} // shouldn't be truncated to as false
             ]});
             expect(fullTrace.dimensions).toEqual([
-                {values: [321, 534, 542], visible: true, _index: 0},
-                {values: [562, 124, 942], visible: true, _index: 1},
+                {values: [321, 534, 542], visible: true, tickformat: '3s', _index: 0},
+                {values: [562, 124, 942], visible: true, tickformat: '3s', _index: 1},
                 {values: [], visible: false},
                 {values: [1, 2], visible: false}
             ]);
@@ -587,6 +587,7 @@ describe('parcoords', function() {
             restyleDimension('label', 'new label')()
                 .then(restyleDimension('tickvals', [[0, 0.1, 0.4, 1, 2]]))
                 .then(restyleDimension('ticktext', [['alpha', 'gamma', 'beta', 'omega', 'epsilon']]))
+                .then(restyleDimension('tickformat', '4s'))
                 .then(restyleDimension('range', [[0, 2]]))
                 .then(restyleDimension('constraintrange', [[0, 1]]))
                 .then(restyleDimension('values', [[0, 0.1, 0.4, 1, 2, 0, 0.1, 0.4, 1, 2]]))

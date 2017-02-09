@@ -56,6 +56,16 @@ module.exports = {
         },
         tickvals: axesAttrs.tickvals,
         ticktext: axesAttrs.ticktext,
+        tickformat: {
+            valType: 'string',
+            dflt: '3s',
+            role: 'style',
+            description: [
+                'Sets the tick label formatting rule using d3 formatting mini-language',
+                'which is similar to those of Python. See',
+                'https://github.com/d3/d3-format/blob/master/README.md#locale_format'
+            ].join(' ')
+        },
         visible: {
             valType: 'boolean',
             dflt: true,

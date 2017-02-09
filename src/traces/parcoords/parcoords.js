@@ -184,8 +184,9 @@ function viewModel(model) {
         return {
             key: key,
             label: dimension.label,
-            tickvals: dimension.tickvals || false,
-            ticktext: dimension.ticktext || false,
+            tickFormat: dimension.tickformat,
+            tickvals: dimension.tickvals,
+            ticktext: dimension.ticktext,
             ordinal: !!dimension.tickvals,
             scatter: c.scatter || dimension.scatter,
             xIndex: i,
@@ -548,7 +549,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
                     .orient('left')
                     .tickSize(4)
                     .outerTickSize(2)
-                    .ticks(wantedTickCount, c.tickFormat) // works for continuous scales only...
+                    .ticks(wantedTickCount, d.tickFormat) // works for continuous scales only...
                     .tickValues(d.ordinal ? // and this works for ordinal scales
                         sdom.filter(function(d, i) {return !(i % Math.round((sdom.length / wantedTickCount)));})
                             .map(function(d, i) {return texts && texts[i] || d;}) :
@@ -619,7 +620,7 @@ module.exports = function(root, svg, styledData, layout, callbacks) {
         .data(repeat, keyFun);
 
     function formatExtreme(d) {
-        return d.ordinal ? function() {return '';} : d3.format(c.tickFormat);
+        return d.ordinal ? function() {return '';} : d3.format(d.tickFormat);
     }
 
     axisExtentTopText.enter()
